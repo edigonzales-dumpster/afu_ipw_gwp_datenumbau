@@ -1,0 +1,631 @@
+!!===================================================================================
+!! Kundendaten
+!!===================================================================================
+!!
+!! Datenmodell GWP 13.3 - Teilmodell Anlagen der WV
+!!
+!!===================================================================================
+!! Revision History
+!!  2018-09-21 | 0.1 | Inititalversion
+!!  2019-08-24 | 0.2 | Fassung fuer GWP kommentiert mit "Erweiterung GWP" 
+!!                     Erweiterungen fuer Bundesmodelle "Erweiterung fuer Modell CH*
+!!                     und Vereinfachung der Modellierung "Anpassung GWP"
+!!                     Status Entwurf
+!!  2019-11-12 | 0.3 | Ergaenzungen aus der Anforderungsspezifikation Plattform 
+!!                     Wasser und Rueckmeldungen von AWA
+!!  2020-06-11 | 0.4 | Ergaenzung um Klasse Loescheinrichtungen gemaess Reseau 2007
+!!  2020-10-07 | 0.5 | Anpassungen aus Diskussion Begleitgruppe
+!!  2021-01-15 | 1.0 | Aufteilung in drei Teilmodelle, als Erweiterungen zu SIA405 
+!!  2021-03-26 | 1.1 | Einarbeiten Rückmeldungen Review Begleitgruppe 
+!!  2021-05-11 | 1.2 | Anpassungen aufgrund Revison MGDM 66 / 141, WV-Gebiete nach
+!!                     erschlossen / erschliessungspflicht unterscheiden
+!!  2021-06-03 | 1.3 | Redaktionelle Anpassungen
+!!  2021-07-13 | 1.4 | Redaktionelle Anpassungen aufgrund Pilotprojekte
+!!===================================================================================
+!! Bemerkungen:
+!! Das vorliegende Datenmodell wird in der Anwendung Anlagen der WV implementiert.
+!! Die Daten können zur Visualisierung auch in den Anlagenkataster übernommen werden
+!! (Web-Service). Die Stammdaten der Anlagen werden aus dem Anlagenkataster, ID 13.1
+!! übernommen. 
+!! Die Organisationen werden im Themenbereich Wasserversorgung in einer
+!! harmonisierten Liste geführt. Die Struktur der Tabelle folgt der IP Wasser. 
+!! Die Daten für diese Tabelle werden kantonsweit über die IPW gepflegt und allen 
+!! Stellen zur Verfügung gestellt. Die aktuelle Version steht auf der IPW-Homepage
+!! zum Download bereit. Änderungen sind an die IPW zu melden.
+!!===================================================================================
+!! Geprüft mit Interlis Compiler ili2c-5.2.0 (11.05.2021)
+!! Sachbearbeitung: Acht Grad Ost AG, Review Moflex GmbH
+!!===================================================================================
+INTERLIS 2.3;
+
+MODEL GWP_Bern_13_3 (de)
+AT "http://www.bve.be.ch/bve/de/index/wasser/wasser/wasserversorgung/RESEAU.html"
+VERSION "2021-07-13"  =
+  IMPORTS UNQUALIFIED INTERLIS;
+  IMPORTS Units,Base_LV95,WV_Organisation, SIA405_WASSER_2015_LV95;
+
+  UNIT
+    /*Die Units entsprechen den Definitionen in SIA 405 Wasser 2015, zur Reduktion der Abhängigkeiten hier auch definiert.*/
+    LiterProMinute [lmin] = (Units.L / Units.min);
+    KiloWatt [kW] = 1000 [Units.W];
+    Kubikmeter_pro_Tag [m3d] = (Units.m3/Units.d);
+
+
+!!---------------------------------------------------------------------------------------
+TOPIC GWP_Anlagen_WV EXTENDS WV_Organisation.WV_Organisation_Wasser =
+!!---------------------------------------------------------------------------------------
+
+    DOMAIN 
+    /*Die Domains entsprechen wo nichts anderes vermerkt inhaltlich den Definitionen in SIA 405 Wasser 2015, zur Reduktion der Abhängigkeiten hier auch definiert.*/
+
+       Genauigkeit = (   
+                       genau,
+                       unbekannt,
+                       ungenau
+                       );
+      
+        Jahr = 1800 .. 2100;
+      
+      /*Anstelle von Boolean-Werte im alten Reseau-Modell werden einfacher lesbare Enumerations verwendet. Wenn Werte zwingend erhoben werden müssen, wird dieser Wertebereich (Ja/Nein) verwendet.*/
+      JaNein = (
+          ja,
+          nein
+        );
+      
+      /*Anstelle von Boolean-Werte im alten Reseau-Modell werden einfacher lesbare Enumerations verwendet. Wenn Werte nicht ohne weiteres erhoben werden müssen, wird dieser Wertebereich (Ja/Nein/unbestimmt) verwendet.*/
+      JaNeinUnbestimmt = (
+          ja,
+          nein,
+          unbestimmt
+        );
+      /*Für die Modellierung von Veränderungen im Bestand ist zusätzlich zu SIA auch der Wert in_Betrieb.wird_aufgehoben möglich*/
+         Statuswerte = (
+           ausser_Betrieb (
+             Reserve), 
+           in_Betrieb (
+             provisorisch,
+             wird_aufgehoben),
+           tot,
+           unbekannt,
+           weitere ( 
+             Berechnungsvariante, 
+             geplant,  
+             Projekt)
+           );
+       
+         Status = ALL OF Statuswerte;
+       
+         AlternativeStromversorgung = (
+           keine,
+           Generator,
+           Notstromanschluss,
+           andere
+         );
+         
+		 /*19.4.21: Anpassung aufgrund Revision 141.1 ungenutzt -> temporaer_ungenutzt*/
+         Nutzungszustand = (
+           /*Das gefasste Wasser wird genutzt.*/
+		   genutzt,
+		   /*Das gefasste Wasser wird vorübergehend nicht genutzt. Eine Grundwasserschutzzone ist jedoch noch immer erforderlich.*/
+           temporaer_ungenutzt,
+		   /*Die Quellwasserfassung ist definitiv aufgehoben oder bereits rückgebaut. Es ist keine Schutzzone mehr erforderlich.*/
+           aufgehoben,
+		   /*Es ist nicht bekannt, ob das gefasste Wasser genutzt wird.*/
+           unbestimmt
+         );
+         /* Erweiterung GWP für Bestimmung der Beitragsberechtigung */
+         Subventionshoehe = (
+           /* 0 %, Nicht berechtigt */
+           Nicht_berechtigt,
+           /* 100 %, vollständig berechtigt */
+           Vollstaendig_berechtigt,
+           /* Beitragsberechtigung unklar */
+           Unbestimmt
+         );
+         
+        /* Fuer das Bundesmodell wird ein Attribut Aufbereitung (Ja/Nein) benoetigt. Dieses kann aber aus den Attributen in dieser Struktur abgeleitet werden. */
+        STRUCTURE S_Aufbereitungart =
+            /*Aufbereitung mittels Aktivkohle*/
+            Aktivkohle : MANDATORY JaNein;
+            /*Entkeimungsanlage Chlor, in Reseau ENT_CHLOR*/
+            Entkeimung_Chlor : MANDATORY JaNein;
+            /*Entkeimungsanlage Ozon, in Reseau ENT_OZON*/
+            Entkeimung_Ozon : MANDATORY JaNein;
+            /*Entkeimungsanlage UV, in Reseau ENT_UV*/
+            Entkeimung_UV : MANDATORY JaNein;
+            /*Filter*/
+            Filtration : MANDATORY JaNein;
+            /*Entkeimungsanlage Flockung*/
+            Flockung : MANDATORY JaNein;
+            /*Entkeimungsanlage Membranfilter*/
+            Membranfiltration : MANDATORY JaNein;
+        END S_Aufbereitungart;
+        
+        /* Erweiterung GWP */
+        /* Energiebedarf in kWh bezogen auf m3 Wasser im Ist- und Planungsstand (Quelle SVGW Musterpflichtenheft) */
+        STRUCTURE S_Energiebedarf =
+            /* Energiebedarf in kWh bezogen auf m3 Wasser im Iststand (Quelle SVGW Musterpflichtenheft) */
+            Energiebedarf_Ist : 0.00 .. 100.00 [Units.kWh];
+            /* Energiebedarf in kWh bezogen auf m3 Wasser im Planungsstand (Quelle SVGW Musterpflichtenheft) */
+            Energiebedarf_geplant : 0.00 .. 100.00 [Units.kWh];
+        END S_Energiebedarf;
+
+        /* Erweiterung GWP: Verbrauchsinformationen in Beobachtungsperiode */
+        STRUCTURE S_Verbrauch =
+            Grossverbraucher : 0 .. 99999999 [m3d];
+            Haushalt_Kleingewerbe : 0 .. 99999999 [m3d];
+            Landwirtschaft : 0 .. 99999999 [m3d];
+            Oeffentlich : 0 .. 99999999 [m3d];
+        END S_Verbrauch;
+        
+        /*Basisklasse für alle WV-Anlagen, hier werden auch die Beziehungen zu den Organisationen modelliert.*/
+        CLASS AnlagenWV_BaseClass (ABSTRACT) =
+          OID AS STANDARDOID;
+            Bemerkung: TEXT*80;
+			/*Falls ein Bauwerk aus mehren Teilen besteht, können diese verschachtelt werden. Ebenfalls ist es so möglich zu dokumentieren, wenn eine Anlage durch mehrere Organisationen betrieben wird, dass pro Betreiber ein Datensatz erfasst werden kann.*/
+            Hauptbauwerk: STANDARDOID;
+            Letzte_Aenderung: MANDATORY INTERLIS.INTERLIS_1_DATE;
+            /*Jede Anlage in der Anwendung Anlagen der WV muss auch im Anlagenkataster verfügbar sein (Stammdaten).*/
+            OBJ_ID_FK_Kataster: STANDARDOID;
+            Renovationsjahr : 2000 .. 2100;
+            /* Anpassung GWP: Es wird ein gegenüber SIA 405 erweiterter Wertebereich verwendet Betriebs- und Planungszustand */
+            Status : Status;
+            /* Basisjahr fuer die Kalkulation des Wiederbeschaffungswerts (siehe auch Attribut Wiederbeschaffungswert) */
+            WBW_Basisjahr : Jahr;
+            /* Wiederbeschaffungswert des Bauwerks. Zusaetzlich muss auch das Attribut WBW_Basisjahr erfasst werden */
+            Wiederbeschaffungswert : 0.00 .. 99999999.99 [Units.CHF];
+        END AnlagenWV_BaseClass;
+      
+        ASSOCIATION DatenlieferantAssoc =
+            DatenlieferantRef (EXTERNAL) -- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            AnlagenWV_BaseClass_DatenlieferantAssocRef -- {0..*} AnlagenWV_BaseClass;
+        END DatenlieferantAssoc; 
+        
+        /* Erweiterung GWP fuer alle Bezugs- und Nutzungsrechte, beeinflusst vom MGDM CH-140 */
+        CLASS Bezug_Nutzungsrecht =
+          OID AS STANDARDOID;
+            Beginn : MANDATORY 1800 .. 2500;
+            Bemerkung : TEXT*80 ;
+            Ende : MANDATORY 1800 .. 2500;
+            /*Für Quellen und Grundwasserfassungen*/
+            Typ : MANDATORY (
+              Konzession,
+              Ehehaftes_Recht,
+              Bewilligung,
+              /*Für Liefer- und Nutzungsvereinbarungen*/
+              /*Mind 1 WasserliefervertragBerechtigterRef und 1 WasserliefervertragLieferantRef zu erfassen*/
+              Liefervereinbarung_einseitig,
+              /*2 WasserliefervertragBerechtigterRef und kein WasserliefervertragLieferantRef zu erfassen*/
+              Liefervereinbarung_gegenseitig,
+			  /*Andere Form von Bezugs- oder Nutzungsrecht. Weiterführende Infos in Bemerkung und / oder Dokument*/
+              anderes
+            );
+            /*Angabe bei einer Konzession: Wert -1 verwenden, wenn unbekannt / nicht definiert*/
+            Umfang_lmin : MANDATORY -1 .. 99999 [lmin];
+            /*Angabe bei eine, Liefervertrag: Wert -1 verwenden, wenn unbekannt / nicht definiert*/
+            Umfang_m3 : MANDATORY -1.000 .. 100000.000 [m3d];
+			/*Allfälliger Sptizenbezug bei einem Liefervertrag. Wert -1 verwenden, wenn unbekannt / nicht definiert*/
+			Umfang_max : MANDATORY -1 .. 99999 [lmin];
+        END Bezug_Nutzungsrecht;
+        
+        ASSOCIATION Recht_Anlage =
+            RechtRef -- {1..*} AnlagenWV_BaseClass;
+            AnlageWV_RechtAssoc -- {0..*} Bezug_Nutzungsrecht;
+        END Recht_Anlage;    
+        
+        /*Dokumente für ergänzende Informantionen zu Anlagen (Bilder, Pläne) oder Nutzungsrechte (Verträge)*/
+        CLASS Dokument =
+          OID AS STANDARDOID;
+            Dokument: BLACKBOX BINARY;
+            Dokumenttitel : MANDATORY TEXT*100;
+			Letzte_Aenderung: MANDATORY INTERLIS.INTERLIS_1_DATE;
+            Kategorie : (
+               Detailplan,
+               Uebersichtsplan,
+               Ausfuehrungsplan,
+               Schemaplan,
+               Betriebsvorschrift,
+               Bild,
+               Vertrag
+            );
+        END Dokument;
+        
+        ASSOCIATION DokumentAnlage =
+            DokumentRef -- {0..*} Dokument;
+            AnlagenWV_BaseClass_DokumentAssoc -- {0..*} AnlagenWV_BaseClass;
+        END DokumentAnlage;
+        
+        ASSOCIATION DokumentRecht =
+            DokumentRef -- {0..*} Dokument;
+            Recht_DokumentAssoc -- {0..*} Bezug_Nutzungsrecht;
+        END DokumentRecht;
+        
+        /* Erweiterung GWP für Nutzungsrecht (Berechtigter) nach Organisationstabelle */
+        /*An einer Übergabestelle können mehre Bezugsbereichtige angeschlossen sein*/
+        ASSOCIATION Recht_WasservertragberechtigterAssoc =
+            WasserliefervertragBerechtigterRef (EXTERNAL) -- {0..*} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            Recht_WasserliefervertragBerechtigterAssoc -- {0..*} Bezug_Nutzungsrecht;
+        END Recht_WasservertragberechtigterAssoc;
+        
+        /* Erweiterung GWP für Nutzungsrecht (Lieferant) */
+        ASSOCIATION Recht_WasservertraglieferantAssoc =
+            WasserliefervertragLieferantRef (EXTERNAL) -- {0..1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            Recht_WasserliefervertragLieferantAssoc -- {0..*} Bezug_Nutzungsrecht;
+        END Recht_WasservertraglieferantAssoc;
+        
+        /* Erweiterung GWP für NotNutzungsrecht */
+        ASSOCIATION Recht_NotnutzungsberechtigterAssoc =
+            NotnutzungsberechtigterRef (EXTERNAL) -- {0..1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            Recht_NotnutzungsberechtigterAssoc -- {0..*} Bezug_Nutzungsrecht;
+        END Recht_NotnutzungsberechtigterAssoc;
+        
+        /* Ergänzende Informationen zur Klasse SIA405_Wasser.Anlage für GWP und Betrieb der WV */
+        CLASS Anlage EXTENDS AnlagenWV_BaseClass =
+            /* Aufbereitung nach Bundesmodell durch Struktur ableitbar */
+            Aufbereitungsart : MANDATORY S_Aufbereitungart;
+            /* Ausgangsdruck bei Druckreduzierschacht in bar, in Reseau P_AUS */
+            Ausgangsdruck : 0.00 .. 9999.99 [Units.bar];
+            /* in Reseau Asl_Lklap */
+            Ausloesung_Loeschklappe : JaNein;
+            Datenuebertragung : (
+                eigene_Uebertragungsleitung,
+                Mietleitung,
+                Funk,
+                diverse
+            );
+            /* Eingangsdruck bei Druckreduzierschacht in bar, in Reseau P_EIN */
+            Eingangsdruck : 0.00 .. 9999.99 [Units.bar];
+            /* Energiebedarf in kWh bezogen auf m3 Wasser im Ist- und Planungsstand (Quelle SVGW Musterpflichtenheft) */
+            Energiebedarf : S_Energiebedarf;
+            Fernwirken : JaNein;
+            Messung_Ab : JaNein;
+            Messung_Zu : JaNein;
+            /* Erweiterung für Modell CH-66 TWN für Brunnenstube / Fassungsart im Schacht, Als Filter für TWM nötig */
+			/*Ja: Die Quelle dient ausschliesslich zur Versorgung in schweren Mangellagen*/
+			/*Nein: Die Quelle dient nicht ausschliesslich zur Versorgung in schweren Mangellagen.  Es wird davon ausgegangen, dass sie für die Bewältigung von schweren Mangellagen keine wichtige Bedeutung hat.*/
+			/*Unbestimmt: Es kann nicht beurteilt werden, ob die Quelle in schweren Mangellagen eine wichtige Bedeutung hat.*/
+            Notwasserversorgung : JaNeinUnbestimmt;
+            /* Anpassung GWP: Es muss der erweiterte Wertebereich verwendet werden Betriebs- und Planungszustand */
+            Steuerung : JaNeinUnbestimmt;
+            /* für die Ausweisung der Beitragshöhe */
+            Subventionsberechtigung : MANDATORY Subventionshoehe;
+            /* Wasserspiegel bei Druckbrecherschacht in m.ü.M., in Reseau Wspgl */
+            Wasserspiegel : Base_LV95.Hoehe;
+        END Anlage;
+        
+        /* Ergänzende Informationen zur Klasse SIA405_Wasser.Foerderanlage für GWP und Betrieb der WV */
+        CLASS Foerderanlage EXTENDS AnlagenWV_BaseClass =
+            Alternative_Stromversorgung : AlternativeStromversorgung;
+            /* Aufbereitung nach Bundesmodell durch Struktur ableitbar */
+            Aufbereitungsart : S_Aufbereitungart;
+            Dauerleistung : 0 .. 99999 [kW];
+            /* Energiebedarf in kWh bezogen auf m3 Wasser im Ist- und Planungsstand (Quelle SVGW Musterpflichtenheft) */
+            Energiebedarf : S_Energiebedarf;
+			/*Die manometrische Förderhöhe bezeichnet die Höhendifferenz zwischen Pumpenachse und und dem Austrittsquerschnitt der Wasserableitung*/
+            Foerderhoehe_manometrisch : 0.00 .. 100.00 [INTERLIS.m];
+            Foerdermenge : MANDATORY -1 .. 99999 [lmin];
+            /* Ursprüngliche Erweiterung von Bern in Revision 2015, zusätzliches Attribut, da Länge ungenünged. Bisher in Bemerkungen erfasst --> neu in Bundesmodell mit Pumpen_Text abgedeckt*/
+            /*Leistung_Gesamt : TEXT*100;*/
+            Leistung_max : 0 .. 99999 [kW];
+            Pumpen_Anzahl : 0 .. 999;
+            /*Falls mehrere Betreiber der Anlage, dann pro Eintrag die zugewiesene Kapazität darstellen*/
+			/*'2 x 400' entspricht einer Förderanlage mit 2 Pumpen à 400 l/min.'(2) x 300' entspricht einer Förderanlage mit 2 Pumpen à 300 l/min, die nur alternierend betrieben werden können.*/
+            /*Beispiel für gemeinsame Nutzung einer Anlage: ein PW mit 6 Aggergaten à 200 l/min mit 2/3 und 1/3 Anteil von 2 WV --> 2 Anlagen und einmal 4x200 l/min und im Nebenbauwerk 2x200 l/min*/
+            Pumpen_Text : MTEXT*255;
+            Sammelbehaelter : JaNein;
+            /* Inhalt Sammelbehälter in m3, in Reseau V_Sammelb */
+            /*Anteil pro WV gesondert ausweisen, falls von Belang*/
+            Sammelbehaelter_Volumen : 0 .. 9999 [Units.m3];
+            /* für die Ausweisung der Beitragshöhe */
+            Subventionsberechtigung : MANDATORY Subventionshoehe;
+            /* Maximaler Wasserspiegel bei Förderanlagen mit Sammelbehälter, in Reseau WSP_MAX */
+            Wasserspiegel_Maximal : Base_LV95.Hoehe;
+        END Foerderanlage;
+        
+        ASSOCIATION Foerderanlage_BetreiberAssoc =
+            BetreiberRef (EXTERNAL)-- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            FoerderanlageBetreiberAssoc -- {0..*} Foerderanlage;
+        END Foerderanlage_BetreiberAssoc;
+        
+        /* Erweiterung GWP für Netzunabhängige Löscheinrichtungen (NuLe), ohne Bezug zu SIA 405 Wasser */
+         CLASS Loescheinrichtung EXTENDS AnlagenWV_BaseClass =
+             /*In Reseau folgende Abkürzungen verwendet: LOF=Feuerweiher, LOL=Löschsilo, LOS=Stauvorrichtung, LOW=Löschwasserschacht */
+             Art : MANDATORY (
+               Feuerweiher,
+               Loeschsilo,
+               Stauvorrichtung,
+               Loeschwasserschacht
+             );
+             Baujahr:  Jahr;
+			 /*Ungefähre Lage des Löscheinrichtung*/
+             Geometrie: MANDATORY Base_LV95.LKoord;
+             /* Terrainkote in m.ü.M. */
+             Hoehe: Base_LV95.Hoehe;
+             Inhalt: MANDATORY 0.00 .. 10000000.00 [Units.m3];
+             /* Anpassung Attributname auf SIA-Standard */
+             Lagebestimmung: MANDATORY Genauigkeit;
+             Name_Nummer : MANDATORY TEXT*40;
+             /* Anpassung Attributname, vorher Naeh_Bez */
+             Standort: TEXT*60;
+        END Loescheinrichtung;
+        
+        ASSOCIATION Loescheinrichtung_BetreiberAssoc =
+            BetreiberRef (EXTERNAL)-- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            Loescheinrichtung -- {0..*} Loescheinrichtung;
+        END Loescheinrichtung_BetreiberAssoc;
+        
+        ASSOCIATION Loescheinrichtung_EigentuemerAssoc =
+            EigentuemerRef (EXTERNAL)-- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            Loescheinrichtung -- {0..*} Loescheinrichtung;
+        END Loescheinrichtung_EigentuemerAssoc;
+        
+        CONSTRAINTS OF Loescheinrichtung = 
+          UNIQUE
+            Name_Nummer, BetreiberRef;
+        END;
+
+        /* Ergänzende Informationen zur Klasse SIA405_Wasser.Wasserbehaelter für GWP und Betrieb der WV */       
+        CLASS Wasserbehaelter EXTENDS AnlagenWV_BaseClass =
+            /*Anteil des Betreibers auf dem Volumen BW-Reserve gemäss Anlagekataster*/
+            Anteil_Brauchwasserreserve_Ist: MANDATORY 0.00 .. 100.00 [Units.Percent];
+            /*Anteil des Betreibers auf dem Volumen LW-Reserve gemäss Anlagekataster*/
+            Anteil_Loeschwasserreserve_Ist: MANDATORY 0.00 .. 100.00 [Units.Percent];
+			/*Anteil des Betreibers auf dem Volumen SW-Reserve gemäss Angabe unten*/
+            Anteil_Stoerreserve_Ist: MANDATORY 0.00 .. 100.00 [Units.Percent];
+            AlternativeStromversorgung : AlternativeStromversorgung;
+            /* Aufbereitung nach Bundesmodell durch Struktur ableitbar */
+            Aufbereitungsart : MANDATORY S_Aufbereitungart;
+            /* Erweiterung GWP für künftige Dimensionierung. Die Brauchwasserreserve ist definiert als Nutzinhalt + Störreserve*/
+            Brauchwasserreserve_geplant : 0 .. 10000000 [Units.m3];
+			/*Das Fassungsvermögen entspricht dem Gesamtvolumen des Reservoirs, gemäss SVGW auch als Speicherinhalt bezeichnet*/
+            Fassungsvermoegen_geplant : 0 .. 10000000 [Units.m3];
+            Foerderhoehe_manometrisch : 0.00 .. 100.00 [INTERLIS.m];
+            Leistung_geplant : TEXT*30;
+            /* Leistung in l/min pro Pumpe, getrennt durch Komma (z.B. '1 x 200, 1 x 250' oder falls beide gleich '2 x 200'), in Reseau LeistungEx */
+            Leistung_Gesamt : TEXT*100;
+            Loeschwasserreserve_geplant : 0.00 .. 10000000.00 [Units.m3];
+            /* Ableiten aus Leistung_Ex */
+            Pumpe : JaNein;
+            /* Inhalt Sammelbehälter in m3, in Reseau V_Sammelb */
+            Sammelbehaelter_Volumen : 0 .. 9999 [Units.m3];
+			/*Die Störreserve entspricht der Notreserve gemäss SVGW. Die Brauchwasserreserve ist definiert als Nutzinhalt + Störreserve*/
+			Stoerreserve_geplant : 0.00 .. 10000000.00 [Units.m3];
+			/*Die Störreserve entspricht der Notreserve gemäss SVGW. */
+		    Stoerreserve_Ist : MANDATORY 0.00 .. 10000000.00 [Units.m3];
+            /* Trinkwasser = Ja: Wird im Normalbetrieb zur Trinkwasserversorgung verwendet. Gesetzliche Anforderungen müssen nach einfacher Aufbereitung erfüllt werden. Nein: Das gefasste Wasser wird im Normalbetrieb nicht zur Trinkwasser-versorgung verwendet, sondern als Brauchwasser genutzt. */
+            /* für die Ausweisung der Beitragshöhe */
+            Subventionsberechtigung : MANDATORY Subventionshoehe;
+			Trinkwasser : MANDATORY JaNein;
+            Wasserspiegel_max : MANDATORY -1.00 .. 5000.00;
+        END Wasserbehaelter;
+        
+        ASSOCIATION Wasserbehaelter_BetreiberAssoc =
+            BetreiberRef (EXTERNAL)-- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            Wasserbehaelter -- {0..*} Wasserbehaelter;
+        END Wasserbehaelter_BetreiberAssoc;
+        
+        /* Ergänzende Informationen zur Klasse SIA405_Wasser.Wassergewinnungsanlage für GWP und Betrieb der WV */
+        /* Die Objekte der Klasse Wassergewinnungsanlage sind originär in der Datenbank SousSol durch das AWA bewirtschaftet
+        Sie werden für den GWP abgegeben und im Rahmen des GWP mit weiteren Informationen angereichert. */
+		/*Mappingregeln: SIA405_WASSER_2015_LV95.Wassergewinnungsanlage.Betreiber => CH-141_2.Quelle.Name_Wasserversorger*/
+        CLASS Wassergewinnungsanlage EXTENDS AnlagenWV_BaseClass =
+            /* Aufbereitung nach Bundesmodell durch Struktur ableitbar */
+			/*Nicht zwingend für Quellen, zwingend für Grundwasserfassungen, Brunnenstuben und Oberflaechenwasserfassungen*/
+            Aufbereitungsart : S_Aufbereitungart;
+            /* Anzahl Einläufe in die Brunnenstube, in Reseau Anz_Einl */
+            Anzahl_Einlauf : 0 .. 9999;
+            /* in Reseau Bakt */
+            Bakteriologische_Beschaffenheit : (
+              gut,
+              bedingt_gut,
+              schlecht
+            );
+            Bezugsgewaesser : TEXT*255;
+            Chemie : ( 
+              unbekannt,
+              in_Ordnung,
+              nicht_in_Ordnung
+            );
+            /* Filterrohr-/Brunnendurchmesser, in Reseau Dm_Brunnen, entspricht Durchmesser in CH-66 */
+            Durchmesser_Brunnen : 0 .. 9999 [Units.mm];
+			/*Dieses Attribut beschreibt die Methode, mit welcher das Grundwasser gefördert wird*/
+            Foerdermethode : (
+              Pumpe,
+              Heber,
+              artesisch,
+              unbestimmt
+            );
+            /* in Reseau Gwspgl_Min. Für Grundwasserfassungen mandatory*/
+            Grundwasserpiegel_Minimal : Base_LV95.Hoehe;
+			/*19.4.21: Anpassung aufgrund Revision 141.1 -> MANDATORY*/
+            Grundwasserleiter_Typ : MANDATORY (
+              Lockergestein,
+              Kluft,
+              Karst,
+              gemischt,
+              unbestimmt
+            );
+            /* Leistung in l/min pro Pumpe, getrennt durch Komma (z.B. '1 x 200, 1 x 250' oder falls beide gleich '2 x 200') */
+            Leistung_Gesamt : TEXT*100;
+            Max_Versickerung : 0.00 .. 1440000.00 [m3d];
+            Notwasserversorgung : JaNeinUnbestimmt;
+			Nutzungszustand : Nutzungszustand;
+			/*Mit diesem Attribut wird angegeben, ob es sich um eine Fassung im „öffentlichen Interesse“ (im Sinne des Gewässerschutzgesetzes) handelt. Die Zuordnung wird den Kantonen überlassen.*/
+            Oeffentliches_Interesse : JaNeinUnbestimmt;
+            /* Konzessionierte Entnahmemenge, aus Bundesmodell, -1 für unbekannt verwenden, Wertebereich gemäss MGDM 141_139, aber ohne Nachkommastellen*/
+            Pkonz : -1 .. 1000000 [lmin];
+			/* Mit diesem Attribut kann beispielsweise die Quellfunktionsweise (Schichtquelle, */
+            /*Überlaufquelle, etc.) oder das Schüttungsverhalten (perennierend, intermittierend, */
+            /*periodisch) näher beschrieben werden. */
+            Quelltyp : TEXT*255;
+            /* für die Ausweisung der Beitragshöhe */
+            Subventionsberechtigung : MANDATORY Subventionshoehe;
+            /* Trinkwasser = Ja: Wird im Normalbetrieb zur Trinkwasserversorgung verwendet. Gesetzliche Anforderungen müssen nach einfacher Aufbereitung erfüllt werden. Nein: Das gefasste Wasser wird im Normalbetrieb nicht zur Trinkwasserversorgung verwendet, sondern als Brauchwasser genutzt. */
+			Trinkwasser : JaNein;
+            /* Mit diesem Attribut kann der Typ detailliert beschrieben werden. */
+            Typ_Bemerkung : TEXT*255;
+			/*19.4.21: Anpassung aufgrund Revision CH-66, Mandatory für gefasste Quellen*/
+			/*Ja: unverzichtbar.*/
+            /*Nein, nicht unverzichtbar.*/
+            /*unbestimmt: Es ist nicht bekannt, ob die Quelle/Brunnenstube/Fassung unverzichtbar ist. */
+			Unverzichtbare_Anlage : JaNeinUnbestimmt;
+			/* Dieses Attribut beschreibt den Verwendungszweck des Quellwassers einer gefassten Quelle (z.B. Trinkwasser, Brauchwasser, Beregnung, thermische Nutzung). */
+            Zweck : TEXT*255;
+        END Wassergewinnungsanlage;
+        
+		/*Erhebung der Produktion im Versorungsgebiet auf Jahresbasis als Bestandteil der Wasserbilanz und als Voraussetzung für GWP-Bearbeitung*/
+		/*Schüttungsmengen sind Pflichtfelder im Bundesmodell. Falls kein Eintrag zu Wassergewinnungsmenge, muss der Wert -1 für SChüttungen verwendet werden. Falls mehrere Einträge, soll der Durchschnittswert der letzten 5 Jahre auf der Schnittstelle an den Bund berechnet werden.*/	
+        CLASS Wassergewinnung_Menge =
+            Bezugsjahr: MANDATORY 2000 .. 2100;
+            Grundwasserbezug: 0 .. 99999 [lmin];
+            /* Geförderte Menge (GW) bzw. Zulauf (Quelle) */
+            Q_Foerder: 0 .. 999999;
+            /* mit QS_Mittel aus Bundesmodell abgedeckt? */
+            QS_Median: 0 .. 999999;
+            /* entspricht Ertrag_maximal, in Reseau QS_MAX. -1 für unbekannt */
+            Schuettung_maximal : MANDATORY -1 .. 99999 [lmin];
+            /* entspricht Ertrag_minimal, in Reseau QS_MIN, -1 für unbekannt */
+            Schuettung_minimal : MANDATORY -1 .. 99999 [lmin];
+            /* entspricht Ertrag_mittel / die mittlere Schüttung in l/min an. -1 für unbekannt*/
+            Schuettung_mittel : MANDATORY -1 .. 99999 [lmin];
+            Ueberlaufmenge: 0 .. 99999 [lmin];
+            Zulauf: 0 .. 99999 [lmin];
+        END Wassergewinnung_Menge;
+        
+        ASSOCIATION Wassergewinnungsanlage_Wassergewinnung_MengeAssoc =
+            Wassergewinnungsanlage_WassergewinnungAssoc -- {1} Wassergewinnungsanlage;
+            WassergewinnungsanlageRef -- {0..*} Wassergewinnung_Menge;
+        END Wassergewinnungsanlage_Wassergewinnung_MengeAssoc;
+        
+       /*Erhebung des Bezugs von bzw. Lieferung an weitere WV pro Übergabepunkt auf Jahresbasis als Bestandteil der Wasserbilanz und als Voraussetzung für GWP-Bearbeitung*/
+        CLASS Wasserlieferung_Bezug_Menge =
+            Bezugsjahr: MANDATORY 2000 .. 2100;
+            Bezugsmenge: 0 .. 99999999 [m3d];
+            Liefermenge: 0 .. 99999999 [m3d];
+        END Wasserlieferung_Bezug_Menge;
+        
+        ASSOCIATION Anlage_Wasserlieferung_Bezug_MengeAssoc =
+            Anlage_Wasserlieferung_Bezug_MengeAssoc -- {1} Anlage;
+            AnlageRef -- {0..*} Wasserlieferung_Bezug_Menge;
+        END Anlage_Wasserlieferung_Bezug_MengeAssoc;
+        
+        /* Erweiterung GWP für die Abbildung von Mengenangaben pro Versorgungsgebiet und über den Stand der Wasserversorgungsplanung
+        Kann als KGDM für 15-BE betrachtet werden. */
+        /*Betreiber eines WV-Gebiets kann verwendet werden, um die einzelnen Klassen auszuwerten: Wo findet Wasserproduktion statt, wieviel wird verbracht*/
+        CLASS Wasserversorgungsgebiet =
+          OID AS STANDARDOID;
+            GWP : MANDATORY JaNeinUnbestimmt;
+            Jahr_GWP : Jahr;
+            Jahr_Planungshorizont : Jahr;
+			Letzte_Aenderung: MANDATORY INTERLIS.INTERLIS_1_DATE;
+            Name_Nummer : MANDATORY TEXT*40;
+            /* Aus GWP abgeleiteter maximaler Tagesverbrauch bezogen auf den Planungshorizont, nach Art */
+            Verbrauch_Maximal_geplant : S_Verbrauch;
+            /* Aus GWP abgeleiteter durchschnittlicher Tagesverbrauch bezogen auf den Planungshorizont, nach Art */
+            Verbrauch_Mittel_geplant : S_Verbrauch;
+			/*19.4.21: Neues Attribut aufgrund Revision CH-66 */
+			/*Mit diesem Attribut wird angegeben, ob mindestens eine weitere Bezugsquelle im Versorgungs¬system existiert, die alleine oder zusammen mit anderen Bezugs-quellen die betrachtete Fassung bei Bedarf kompensieren könnte (z.B. beim Ausfall der betrachteten Anlage). Im Entwurf Bundesmodell pro Quelle, Grundwasserfassung, Oberflaechengewaesserfassung modelliert. Der Einfachheit halber beim WV-Gebiet*/
+			Weitere_Bezugsquelle : MANDATORY JaNeinUnbestimmt;
+        END Wasserversorgungsgebiet;
+
+        
+        ASSOCIATION Wasserversorgungsgebiet_BetreiberAssoc =
+            BetreiberRef (EXTERNAL)-- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+            Wasserversorgungsgebiet -- {0..*} Wasserversorgungsgebiet;
+        END Wasserversorgungsgebiet_BetreiberAssoc;
+        
+        CONSTRAINTS OF Wasserversorgungsgebiet = 
+          UNIQUE
+            Name_Nummer, BetreiberRef;
+        END;
+
+        CLASS Wasserversorgungsgebiet_Perimeter =
+          OID AS STANDARDOID;
+            Art : (
+			/*Falls der Perimeter von Gesetzes her zu erschliessen ist, heute noch nicht erschlossen ist*/
+			Erschliessungspflichtig,
+			/*Der Perimeter wird durch die WV heute versorgt*/
+			Erschlossen);
+            /* Für Visualisierung und Darstellung des räumlichen Bezugs eines Versorgungsgebiets */
+            Perimeter : Base_LV95.Surface;
+        END Wasserversorgungsgebiet_Perimeter;
+
+        ASSOCIATION Wasserversorgungsgebiet_Wasserversorgungsgebiet_PerimeterAssoc =
+            Wasserversorgungsgebiet_Wasserversorgungsgebiet_PerimeterAssoc -- {1} Wasserversorgungsgebiet;
+            WasserversorgungsgebietRef -- {1..*} Wasserversorgungsgebiet_Perimeter;
+        END Wasserversorgungsgebiet_Wasserversorgungsgebiet_PerimeterAssoc;
+        
+        /* Erhebung des Verbrauchs im Versorungsgebiet auf Jahresbasis als Bestandteil der Wasserbilanz und als Voraussetzung für GWP-Bearbeitung */
+        CLASS Wasserverbrauch_Menge = 
+            Bezugsjahr: MANDATORY 2000 .. 2100;
+            /* Maximaler Tagesverbrauch im Bezugsjahr, unterteilt nach Art */
+            Verbrauch_Maximal_Ist : MANDATORY S_Verbrauch;
+            /* Durchschnittlicher Tagesverbrauch nach Art */
+            Verbrauch_Mittel_Ist : MANDATORY S_Verbrauch;
+        END Wasserverbrauch_Menge;
+        
+        /* Verbrauchsangaben pro Jahr zur Wasserversorgung*/
+        ASSOCIATION Wasserversorgungsgebiet_Wasserverbrauch_MengeAssoc =
+            Wasserversorgungsgebiet_Wasserverbrauch_MengeAssoc -- {1} Wasserversorgungsgebiet;
+            WasserversorgungsgebietPerimeterRef -- {0..*} Wasserverbrauch_Menge;
+        END Wasserversorgungsgebiet_Wasserverbrauch_MengeAssoc;
+        
+        CLASS NuLE_Uebersichtsplanposition EXTENDS Base_LV95.SymbolPos =
+            Plantyp: MANDATORY ( 
+              Leitungskataster, 
+              Werkplan, 
+              Uebersichtsplan (
+                UeP10,
+                UeP2, 
+                UeP5  
+                )
+              );
+            SymbolskalierungLaengs: 0.0 .. 9.9;
+            SymbolskalierungHoch: 0.0 .. 9.9;
+        END NuLE_Uebersichtsplanposition;
+        
+        
+        ASSOCIATION Loescheinrichtung_NuLE_UebersichtsplanpositionAssoc =
+            Objekt  -<#> {1} Loescheinrichtung;
+            Symbol --   {0 .. *} NuLE_Uebersichtsplanposition;
+        END Loescheinrichtung_NuLE_UebersichtsplanpositionAssoc;
+
+
+  END GWP_Anlagen_WV;
+
+  /*Die folgenden Definitionen dienen dazu, einen Transferdatensatz mit den Anlagenkataster der Kantone Bern und Solothurn beziehungsweise der IP Wasser zu validieren.*/
+  VIEW TOPIC Kataster_Constraints = 
+       DEPENDS ON GWP_Bern_13_3.GWP_Anlagen_WV, SIA405_WASSER_2015_LV95.SIA405_Wasser;
+    
+       VIEW v_Anlage
+          PROJECTION OF GWP_Bern_13_3.GWP_Anlagen_WV.Anlage;
+          =
+          ALL OF Anlage;
+          EXISTENCE CONSTRAINT OBJ_ID_FK_Kataster REQUIRED IN SIA405_WASSER_2015_LV95.SIA405_Wasser.Anlage:OBJ_ID;
+       END v_Anlage;
+       
+       VIEW v_Foerderanlage
+          PROJECTION OF GWP_Bern_13_3.GWP_Anlagen_WV.Foerderanlage;
+          =
+          ALL OF Foerderanlage;
+          EXISTENCE CONSTRAINT OBJ_ID_FK_Kataster REQUIRED IN SIA405_WASSER_2015_LV95.SIA405_Wasser.Foerderanlage:OBJ_ID;
+          
+       END v_Foerderanlage;
+       
+       VIEW v_Wasserbehaelter
+          PROJECTION OF GWP_Bern_13_3.GWP_Anlagen_WV.Wasserbehaelter;
+          =
+          ALL OF Wasserbehaelter;
+          EXISTENCE CONSTRAINT OBJ_ID_FK_Kataster REQUIRED IN SIA405_WASSER_2015_LV95.SIA405_Wasser.Wasserbehaelter:OBJ_ID;
+       END v_Wasserbehaelter;
+       
+       VIEW v_Wassergewinnungsanlage
+          PROJECTION OF GWP_Bern_13_3.GWP_Anlagen_WV.Wassergewinnungsanlage;
+          =
+          ALL OF Wassergewinnungsanlage;
+          EXISTENCE CONSTRAINT OBJ_ID_FK_Kataster REQUIRED IN SIA405_WASSER_2015_LV95.SIA405_Wasser.Wassergewinnungsanlage:OBJ_ID;
+       END v_Wassergewinnungsanlage;
+    
+  END Kataster_Constraints;
+  
+END GWP_Bern_13_3.

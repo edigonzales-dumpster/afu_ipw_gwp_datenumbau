@@ -1,0 +1,238 @@
+!!===================================================================================
+!! Kundendaten
+!!===================================================================================
+!!
+!! Datenmodell GWP Bern 13.2 - Teilmodell GWP-Fachthemen
+!!
+!!===================================================================================
+!! Revision History
+!!  2018-09-21 | 0.1 | Inititalversion
+!!  2019-08-24 | 0.2 | Fassung fuer GWP kommentiert mit "Erweiterung GWP" 
+!!                     Erweiterungen fuer Bundesmodelle "Erweiterung fuer Modell CH*
+!!                     und Vereinfachung der Modellierung "Anpassung GWP"
+!!                     Status Entwurf
+!!  2019-11-12 | 0.3 | Ergaenzungen aus der Anforderungsspezifikation Plattform 
+!!                     Wasser und Rueckmeldungen von AWA
+!!  2020-06-11 | 0.4 | Ergaenzung um Klasse Loescheinrichtungen gemaess Reseau 2007
+!!  2020-10-07 | 0.5 | Anpassungen aus Diskussion Begleitgruppe
+!!  2021-01-15 | 1.0 | Aufteilung in drei Teilmodelle, als Erweiterungen zu SIA405 
+!!  2021-03-25 | 1.1 | Einarbeiten Rückmeldungen Review Begleitgruppe 
+!!  2021-04-20 | 1.2 | Anpassungen aufgrund Revison MGDM 66 / 141
+!!  2021-06-03 | 1.3 | Redaktionelle Anpassungen
+!!  2021-06-03 | 1.4 | Redaktionelle Anpassungen aufgrund Pilotprojekte
+!!===================================================================================
+!! Bemerkungen:
+!! Die Organisationen werden im Themenbereich Wasserversorgung in einer
+!! harmonisierten Liste geführt. Die Struktur der Tabelle folgt der IP Wasser. 
+!! Die Daten für diese Tabelle werden kantonsweit über die IPW gepflegt und allen 
+!! Stellen zur Verfügung gestellt. Die aktuelle Version steht auf der IPW-Homepage
+!! zum Download bereit. Änderungen sind an die IPW zu melden.
+!!===================================================================================
+!! Geprüft mit Interlis Compiler ili2c-5.2.0 (5.03.2021)
+!! Sachbearbeitung: Acht Grad Ost AG, Review Moflex GmbH
+!!===================================================================================
+INTERLIS 2.3;
+
+MODEL GWP_Bern_13_2 (de)
+AT "http://www.bve.be.ch/bve/de/index/wasser/wasser/wasserversorgung/RESEAU.html"
+VERSION "2021-07-13"  =
+  IMPORTS UNQUALIFIED INTERLIS;
+  IMPORTS Units,Base_LV95, WV_Organisation;
+
+!!---------------------------------------------------------------------------------------
+TOPIC GWP_Bearbeitung EXTENDS WV_Organisation.WV_Organisation_Wasser =
+!!---------------------------------------------------------------------------------------
+    DOMAIN 
+
+    Jahr = 1800 .. 2100;
+
+    JaNein = (
+      ja,
+      nein
+    );
+    
+   /*Standard-Klasse für alle Klassen im Modell*/
+    CLASS GWP_BaseClass (ABSTRACT) =
+        OID AS STANDARDOID;
+		Bemerkung: TEXT*80;
+        Letzte_Aenderung: MANDATORY INTERLIS.INTERLIS_1_DATE;
+    END GWP_BaseClass;
+    
+    ASSOCIATION DatenherrAssoc = 
+        DatenherrRef (EXTERNAL) -- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+        BaseClass_DatenherrAssocRef -- {0..*} GWP_BaseClass;
+    END DatenherrAssoc;
+  
+    ASSOCIATION DatenlieferantAssoc =
+        DatenlieferantRef (EXTERNAL) -- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+        BaseClass_DatenlieferantAssocRef -- {0..*} GWP_BaseClass;
+    END DatenlieferantAssoc; 
+
+
+    /* Erweiterung GWP zur Verwaltung von Massnahmen aus dem GWP */
+    CLASS GWPMassnahme EXTENDS GWP_BaseClass =
+        /* Kurzer Massnahmenbeschrieb, i.d.R. Präzisierung der Kategorie */
+        Beschreibung : TEXT*100;
+        /* Identifikationsnummer der Massnahme, wird für die Beschriftung auf dem Plan verwendet, daher 2-3 Zeichen optimal */
+        Bezeichnung : MANDATORY TEXT*20;
+        /* Datum, an welchem die Massnahme in die Massnahmenliste aufgenommen wurde. */
+        Datum_Eingang : MANDATORY INTERLIS.INTERLIS_1_DATE;
+        Gesamtkosten : 0.00 .. 1000000000.00 [Units.CHF];
+        /* Kurzbeschreibung des Handlungsbedarfs */
+        Handlungsbedarf : MTEXT*255;
+        /* Jahr, in dem die Massnahme effektiv umgesetzt wurde. */
+        Jahr_Umsetzung_effektiv : Jahr;
+        /* Jahr, bis wann die Massnahme umgesetzt sein soll. */
+        Jahr_Umsetzung_geplant : Jahr;
+        /* Liste aus dem GEP übernommen und angepasst. */
+        Kategorie : (
+          administrative_Massnahme,
+          andere,
+          /* Aufhebung von Leitungen (Bauwerke siehe Kategorie WV_Anlagen) */
+          Aufhebung,
+          Datenmanagement,
+		  /*Beispielsweise bei Änderung von Hauptleitung zu Transportleitung - Notwendig pendent*/
+          /*Funktionsaenderung,*/
+          GWP_Bearbeitung,
+          GWP_Vorbereitungsarbeiten,
+          Kontrolle_und_Ueberwachung,
+		  /*Leitungsersatz inbesondere aufgrund neuer Linienführung*/
+          Leitungsersatz_diverse_Gruende,
+          /* Herstellung neuer Leitungen in der bisherigen oder anderen Linienführung, wobei die neuen Anlagen die Funktion der ursprünglichen Leitungen einbeziehen*/
+          Leitungsersatz_Erneuerung,
+		  /*Herstellung neuer Leitungen in der bisherigen oder anderen Linienführung mit Anpassung des Durchmessers*/
+          Leitungsersatz_hydraulisch,
+          /* Räumliche Erweiterung des Netzes ohne Sonderbauwerke */
+          Netzerweiterung,
+          /* Massnahmen zur Verbesserung der aktuellen Funktionsfähigkeit von Leitungen unter vollständiger oder teilweiser Einbezug ihrer ursprünglichen Substanz.*/
+          Sanierung,
+          /* Massnahmen zur Behebung örtlich begrenzter Schäden (SN EN 752). In älteren Normen und Richtlinien wird diese Massnahme mit Instandsetzung bezeichnet.
+          Anpassungen an der Schutzzone bei einer Wasserfassung */
+          Schutzzone,
+          /* Angepasste Bezeichnung und Werte für GWP: Massnahmen an Bauwerken, welche nicht das Leitungsetz betfen */
+          WV_Anlagen(
+            Neubau,
+            /* Aus- und Umbauten eines SBW */
+            Aus_Umbau,
+            Erweiterung_Kapazitaet,
+            Rueckbau),
+          unbekannt
+        );
+		/* Verwenden für die grafische Repräsentation einer linearen Massnahme wie Kanalsanierung */
+        Linie : Base_LV95.Polyline;
+        /* Für Visualisierung und Darstellung des räumlichen Bezugs einer flächigen Massnahme */
+        Perimeter : Base_LV95.Surface;
+        /* Priorität der Massnahme */
+        Prioritaet : (
+          /* Die Massnahme ist sehr dringend und kurzfristig auszuführen. Zeithorizont <= 2 Jahre */
+          M0,
+          /* Die Massnahme ist dringend auszuführen. Zeithorizont 3-4 Jahre */
+          M1,
+          /* Die Massnahme ist mittelfristig erforderlich. Zeithorizont 5-7 Jahre */
+          M2,
+          /* Die Massnahme kann längerfristig geplant werden. Zeithorizont 7-10 Jahre */
+          M3,
+          /* Die Massnahme kann bis zur nächsten GEP-Überarbeitung warten. Zeithorizont >= 10 Jahre */
+          M4,
+          unbekannt
+        );
+        Status : MANDATORY (
+          erledigt,
+          in_Bearbeitung,
+          pendent,
+          sistiert,
+          unbekannt
+        );
+        /* Für Visualisierung wie Platzierung Massnahmennummer */
+        SymbolPos : Base_LV95.LKoord;
+        /* Verweis auf andere Massnahmen (Bezeichnung) oder Arbeiten, Hinweis auf Grundlagen in denen die Massnahmen näher erläutert werden, wie z.B. auf die entsprechenden GWP-Teilprojekte */
+        Verweis : MTEXT*255;
+	  END GWPMassnahme;
+
+    /* Organisation, welche für die Massnahme zuständig ist */
+    ASSOCIATION GWPMassnahme_TraegerschaftAssoc =
+        TraegerschaftRef (EXTERNAL) -- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+        GWPMassnahme_TraegerschaftAssoc -- {0..*} GWPMassnahme;
+    END GWPMassnahme_TraegerschaftAssoc;
+
+    CONSTRAINTS OF GWPMassnahme = 
+      UNIQUE 
+        Bezeichnung, TraegerschaftRef;
+    END;
+
+    ASSOCIATION GWPMassnahme_Verantwortlich_AusloesungAssoc =
+        Verantwortlich_AusloesungRef (EXTERNAL) -- {1} WV_Organisation.WV_Organisation_Wasser.Organisation;
+        GWPMassnahme_Verantwortlich_AusloesungAssoc -- {0..*} GWPMassnahme;
+    END GWPMassnahme_Verantwortlich_AusloesungAssoc;
+
+    CLASS GWPMassnahme_Text EXTENDS Base_LV95.TextPos =
+        Bemerkung: TEXT*80; 
+        Plantyp: MANDATORY ( 
+          Leitungskataster, 
+          Werkplan, 
+          Uebersichtsplan (
+            UeP10,  !! 1:10'000
+            UeP2,  !! 1:2'000
+            UeP5  !! 1:10'000
+            )
+          );
+        Textinhalt: MANDATORY MTEXT*80; 
+    END GWPMassnahme_Text;
+
+    ASSOCIATION GWPMassnahme_TextAssoc =
+        GWPMassnahme -<#> {1} GWPMassnahme;
+        Text -- {0..*} GWPMassnahme_Text;
+    END GWPMassnahme_TextAssoc;
+
+    /* Erweiterung GWP: Zusammensetzung von Versorgungsgebieten zu regionalen Verbunden (nur planerische Zwecke nicht zwingend rechliche Zusammenschlüsse
+    Keine weiteren Angaben im Datensatz der Gemeinde */
+    CLASS Regionales_Versorgungsgebiet EXTENDS GWP_BaseClass =
+	    Jahr_R_GWP : Jahr;
+        Name : MANDATORY TEXT*40;
+	    /* Räumlicher Perimeter der Regionalplanung */
+	    Perimeter: Base_LV95.Surface;
+        R_GWP : MANDATORY JaNein;
+	  UNIQUE 
+        Name, DatenherrRef;
+    END Regionales_Versorgungsgebiet;
+
+    /* Falls Massnahme aus einer Regionalplanung */
+    ASSOCIATION RGWPMassnahme_RegionalesVersorgungsgebietAssoc =
+      Regionale_Traegerschaft_RGWPMassnahme -- {0..1} Regionales_Versorgungsgebiet;
+      RGWPMassnahme_TraegerschaftAssoc -- {0..*} GWPMassnahme;
+    END RGWPMassnahme_RegionalesVersorgungsgebietAssoc;
+
+    /* Erweiterung GWP: Zusammensetzung von Versorgungsgebieten zu regionalen Verbunden (nur planerische Zwecke nicht zwingend rechliche Zusammenschlüsse
+    Keine weiteren Angaben im Datensatz der Gemeinde */
+    CLASS TWMPerimeter EXTENDS GWP_BaseClass =
+        Jahr_TWM_Konzept : Jahr;
+	    Name : MANDATORY TEXT*40;
+	    Perimeter: Base_LV95.Surface;
+	  UNIQUE 
+        Name, DatenherrRef;
+    END TWMPerimeter;
+
+    /* Dokumentverwaltung über eigene Klasse, Assoziation mit TWMPerimeter */
+	CLASS Dokument =
+	  OID AS STANDARDOID;
+	    Dokument: BLACKBOX BINARY;
+		Dokumenttitel : MANDATORY TEXT*100;
+		Letzte_Aenderung: MANDATORY INTERLIS.INTERLIS_1_DATE;
+		/*Die notwendigen Kategorien nach aktualisiertem Bundesmodell nachziehen*/
+		Kategorie : (
+		   Betriebsvorschrift,
+		   Schemaplan,
+		   VTM_Konzept,
+		   VTM_Dokument,
+		   Zustaendigkeitsliste
+		);
+	END Dokument;
+	
+    ASSOCIATION DokumentTWMPerimeter =
+      DokumentRef -- {0..*} Dokument;
+      TWMPerimeter_DokumentAssoc -- {1} TWMPerimeter;
+    END DokumentTWMPerimeter;
+
+  END GWP_Bearbeitung;
+
+END GWP_Bern_13_2.

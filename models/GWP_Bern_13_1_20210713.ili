@@ -1,0 +1,350 @@
+!!===================================================================================
+!! Kundendaten
+!!===================================================================================
+!!
+!! Datenmodell GWP 13.1 - Teilmodell Anlagenkataster
+!!
+!!===================================================================================
+!! Revision History
+!!  2018-09-21 | 0.1 | Inititalversion
+!!  2019-08-24 | 0.2 | Fassung fuer GWP kommentiert mit "Erweiterung GWP" 
+!!                     Erweiterungen fuer Bundesmodelle "Erweiterung fuer Modell CH*
+!!                     und Vereinfachung der Modellierung "Anpassung GWP"
+!!                     Status Entwurf
+!!  2019-11-12 | 0.3 | Ergaenzungen aus der Anforderungsspezifikation Plattform 
+!!                     Wasser und Rueckmeldungen von AWA Bern bzw. AfU Solothurn
+!!  2020-06-11 | 0.4 | Ergaenzung um Klasse Loescheinrichtungen gemaess Reseau 2007
+!!  2020-10-07 | 0.5 | Anpassungen aus Diskussion Begleitgruppe
+!!  2021-01-15 | 1.0 | Aufteilung in drei Teilmodelle, als Erweiterungen zu SIA405 
+!!  2021-03-26 | 1.1 | Einarbeiten Rückmeldungen Review Begleitgruppe 
+!!  2021-04-20 | 1.2 | Anpassungen aufgrund Revison MGDM 66 / 141
+!!  2021-06-03 | 1.3 | Redaktionelle Anpassungen
+!!  2021-07-13 | 1.4 | Redaktionelle Anpassungen aufgrund Pilotprojekte
+!!===================================================================================
+!! Bemerkungen:
+!! Organisationen wie Eigentümer, Betreiber, Datenherr und Datenbewirtschafter müssen
+!! im Kontext der IP Wasser in den Kantonen BE und SO auf die harmonisierte 
+!! Organisationsliste abgestimmt sein. Erfahrungsgemäss ist das über den gemeinsamen
+!! Schlüssel am einfachsten erreichbar. Daher wird im Datenmodell der Wertebereich 
+!! jeweils auf 16 Stellen limitiert. Im Transferfile muss der Schlüssel aus der 
+!! Organisationstabelle ausgegeben werden.
+!! Die Daten für diese Tabelle werden kantonsweit über die IPW gepflegt und allen 
+!! Stellen zur Verfügung gestellt. Die aktuelle Version steht auf der IPW-Homepage
+!! zum Download bereit. Änderungen sind an die IPW zu melden.
+!!===================================================================================
+!! Geprüft mit Interlis Compiler ili2c-5.2.0 (5.03.2021)
+!! Sachbearbeitung: Acht Grad Ost AG, Review Moflex GmbH
+!!===================================================================================
+INTERLIS 2.3;
+
+MODEL GWP_Bern_13_1 (de)
+AT "http://www.bve.be.ch/bve/de/index/wasser/wasser/wasserversorgung/RESEAU.html"
+VERSION "2021-07-13"  =
+  IMPORTS Units,Base_LV95,SIA405_Base_LV95,SIA405_WASSER_2015_LV95, WV_Organisation;
+
+!! --------------------------------------------------------------------------------
+TOPIC SIA405_Wasser_GWP
+    EXTENDS SIA405_WASSER_2015_LV95.SIA405_Wasser =
+!! --------------------------------------------------------------------------------
+    
+	DOMAIN
+	JaNein = (
+      ja,
+      nein
+    );
+
+	/* Erweiterung GWP für Angaben aus der Netzberechnung im Ist- und Planungsstand */
+    CLASS Hydraulischer_Knoten (EXTENDED) =
+        /*ausgewaehlte Punkte der Tabellen Leitungspunkt, Absperrorgan, usw.*/
+        /*Druck = Ist-Situation statisch */
+        Statischer_Druck_geplant: 0.0..99.9 [Units.bar];
+        Statischer_Druck_Ist: 0.0..99.9 [Units.bar];
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+      UNIQUE 
+        Name_Nummer, Datenherr;
+    END Hydraulischer_Knoten;
+
+    CLASS Hydraulischer_Strang (EXTENDED) =
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+      UNIQUE 
+        Name_Nummer, Datenherr;
+    END Hydraulischer_Strang;
+
+    /* Der Identifikator aus dem Bundesmodell wird zusammengesetzt aus Datenherr & OBJ_ID, muss nicht durch Katasterstelle gepflegt werden.*/
+    /* Der Netzteilident aus dem Bundesmodell wird zusammengesetzt aus Datenherr & Druckzone, nur für TWN-relevante Leitungen (als Filterkriterium nutzbar), muss nicht durch Katasterstelle gepflegt werden. */
+    CLASS Leitung (EXTENDED) =
+	    /*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+        Betreiber (EXTENDED) : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+		/*unabhaengig von der Material-Art, zur Trasseesicherung*/
+		/*Vereinfachung bei Kalibererweiterung mit gleicher Leitungsführung*/
+        Durchmesser_geplant : 0 .. 9999 [Units.mm];
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+        Eigentuemer (EXTENDED) : MANDATORY TEXT*16;
+        Lagebestimmung (EXTENDED) : MANDATORY ;
+        Material (EXTENDED) : MANDATORY ;
+        /*Erweiterung GWP fuer Bestimmung der Beitragsberechtigung*/
+        Subventionsberechtigung : MANDATORY (
+          /*0 %, Nicht berechtigt, andere Funktion*/
+          Nicht_berechtigt,
+          /*50% (der Investitionskosten), Transportleitung mit Zusatzfunktion als Verteilleitung*/
+          Teilweise_berechtigt,
+          /*100 %, vollstaendig berechtigt, Transportleitung ohne Zusatzfunktion*/
+          Vollstaendig_berechtigt,
+          /*Beitragsberechtigung unklar, Funktion nicht definiert*/
+          Unbestimmt
+        );
+        /*Trinkwasser = true: Leitungen des Versorgungsnetzes, welche zur Erfüllung der Trinkwasserversorgung in Notlagen benötigt werden. Wird als Filter für die Datenabgabe an den Bund (CH-66) benötigt*/
+        Trinkwasser : MANDATORY JaNein;
+        /*Basisjahr fuer die Kalkulation des Wiederbeschaffungswerts (siehe auch Attribut Wiederbeschaffungswert)*/
+        WBW_Basisjahr : SIA405_Base_LV95.Jahr;
+        /*Wiederbeschaffungswert des Bauwerks. Zusaetzlich muss auch das Attribut WBW_Basisjahr erfasst werden*/
+        Wiederbeschaffungswert : 0.00 .. 99999999.99 [Units.CHF];
+	  MANDATORY CONSTRAINT DEFINED (OBJ_ID);
+      UNIQUE 
+        /*UNIQUE Kombination OBJ_ID, Datenherr, damit wird muss OBJ_ID als Pflichtattribut definiert sein (kann dem Wert der OID entsprechend)*/
+        OBJ_ID, Datenherr;
+	END Leitung;
+
+    CLASS Hydrant (EXTENDED) =
+	    Art (EXTENDED) : MANDATORY ;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+        Betreiber : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+        Eigentuemer (EXTENDED) : MANDATORY TEXT*16;
+        Einbaujahr (EXTENDED) : MANDATORY SIA405_Base_LV95.Jahr;
+        /*Ist bzw. gerechnet, wenn nicht Ist dann berechnete Werte aus der Netzberechnung*/
+        Fliessgeschwindigkeit: 0.000 .. 9999.999[SIA405_Base_LV95.ms];
+        Name_Nummer (EXTENDED) : MANDATORY TEXT*40;
+        Status : MANDATORY SIA405_WASSER_2015_LV95.SIA405_Wasser.Status;
+        Versorgungsdruck (EXTENDED) : MANDATORY 0.0 .. 99.9 [Units.bar];
+      UNIQUE 
+        /*UNIQUE Kombination Name_Nummer pro Datenherr*/
+        Name_Nummer, Datenherr;
+      END Hydrant;
+
+    CLASS Anlage (EXTENDED) =
+	    /*Erweiterung GWP aufgrund der Bundesmodelle CH-66 bzw. CH-141,139.2 */
+		/*Mappingregeln: SIA405_WASSER_2015_LV95.Regulierschacht == CH66.Schieberschacht*/
+	    Art (EXTENDED) : MANDATORY (
+        Schacht(
+          Druckreduzierschacht,
+          Verbindungsschacht (
+             Einseitige_Lieferung,
+             Gegenseitige_Lieferung)
+          /*Erweiterung Schieberschacht nach Bundesmodell wird durch Regulierschacht abgedeckt. */
+		  ),
+        Brunnen(
+          Trinkwasserbrunnen(
+		    /*Am Leitungsnetz angeschlossener Brunnen mit Trinkwasserqualität.*/
+            an_Leitungsnetz,
+		    /*Vom Leitungsnetz unabhängiger Brunnen mit Trinkwasserqualität*/
+            unabhaengig),
+          /*Vom Leitungsnetz unabhängiger Brunnen ohne Trinkwasserqualität.*/
+		  unabh_o_TWQualitaet,
+		  /*Vom Leitungsnetz unabhängiger Brunnen mit unbestimmter Trinkwasserqualität.*/
+          unabh_TWQualitaet_unbest),
+        Betriebszentrale (
+          Hauptzentrale, 
+          Nebenzentrale)
+        );
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+	    Betreiber (EXTENDED) : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+        Eigentuemer (EXTENDED) : MANDATORY TEXT*16;
+        Einbaujahr (EXTENDED) : MANDATORY SIA405_Base_LV95.Jahr;
+        Name_Nummer (EXTENDED) : MANDATORY TEXT*40;
+      /*Für die Abstimmung von Anlagenkataster mit der Anwendung Anlagen-WV müssen die OBJ_ID vorhanden und pro Datenherr eindeutig sein. SIA405_Base_LV95 definiert OBJ_ID nicht als Pflichtfeld.*/
+	  MANDATORY CONSTRAINT DEFINED (OBJ_ID);
+	  UNIQUE 
+        /*UNIQUE Kombination OBJ_ID pro Datenherr*/
+		OBJ_ID, Datenherr;
+    END Anlage;
+
+    /*Hinweis zu Betreiber: in SIA405 ist der Betreiber nicht bei der Förderanlage nicht vorgesehen. Da es mehrere Betreiber pro Förderanlage geben kann, wird dieses Attribut im Modell 13_3 eingeführt.*/
+    CLASS Foerderanlage (EXTENDED) =
+	    /*Erweiterung GWP aufgrund der Bundesmodelle*/
+		/*Wird gemappt auf Foerderanlage.Art*/
+	    Art (EXTENDED) : MANDATORY (
+        Pumpwerk(
+          /*Stufenpumpwerk nach Bundesmodell ist gemappt von SIA Zwischenpumpwerk, Zwischenpumpwerk_mit_Behaelter entspricht Bundesmodell Stufenpumpwerk_mit_Behaelter*/
+          Zwischenpumpwerk_mit_Behaelter)
+        );
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+        Eigentuemer (EXTENDED) : MANDATORY TEXT*16;
+        Einbaujahr (EXTENDED) : MANDATORY SIA405_Base_LV95.Jahr;
+		/*Die Höhe bezeichnet bei einer Förderanlage die Achslage der Pumpe. Bei unbekannter Höhe Wert = -99 eintragen*/
+		Hoehe (EXTENDED) : MANDATORY Base_LV95.Hoehe;
+        Name_Nummer (EXTENDED) : MANDATORY TEXT*40;
+      /*Für die Abstimmung von Anlagenkataster mit der Anwendung Anlagen-WV müssen die OBJ_ID vorhanden und pro Datenherr eindeutig sein. SIA405_Base_LV95 definiert OBJ_ID nicht als Pflichtfeld.*/
+	  MANDATORY CONSTRAINT DEFINED (OBJ_ID);
+      UNIQUE 
+        /*UNIQUE Kombination Name_Nummer pro Datenherr*/
+        !!Name_Nummer, Datenherr;
+		OBJ_ID, Datenherr;
+    END Foerderanlage;
+
+    /*Hinweis zu Betreiber: in SIA405 ist der Betreiber nicht beim Wasserbehaelter nicht vorgesehen. Da es mehrere Betreiber pro Wasserbehaelter geben kann, wird dieses Attribut im Modell 13_3 eingeführt.*/
+    CLASS Wasserbehaelter (EXTENDED) =
+       /*Erweiterung GWP aufgrund der Bundesmodelle*/
+	    Art (EXTENDED) : MANDATORY (
+           Behaelter_mit_Druckerhoehungspumpwerk,
+           Pumpwerk_mit_Sammelbehaelter
+        );
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+        Eigentuemer (EXTENDED) : MANDATORY TEXT*16;
+        Einbaujahr (EXTENDED) : MANDATORY SIA405_Base_LV95.Jahr;
+        Name_Nummer (EXTENDED) : MANDATORY TEXT*40;
+      /*Für die Abstimmung von Anlagenkataster mit der Anwendung Anlagen-WV müssen die OBJ_ID vorhanden und pro Datenherr eindeutig sein. SIA405_Base_LV95 definiert OBJ_ID nicht als Pflichtfeld.*/
+	  MANDATORY CONSTRAINT DEFINED (OBJ_ID);
+      UNIQUE 
+        /*UNIQUE Kombination Name_Nummer pro Datenherr*/
+        !!Name_Nummer, Datenherr;
+		OBJ_ID, Datenherr;
+    END Wasserbehaelter;
+    
+    CLASS Wassergewinnungsanlage (EXTENDED) =
+	    /*Erweiterung GWP aufgrund der Bundesmodelle*/
+	    Art (EXTENDED) : MANDATORY (
+        Fassungsanlage(
+        /*aus TWN, wird gemappt auf Objekt Quelle.Fassungsart*/
+          Quellfassung(
+            direkt,
+            Fassungsstrang,
+            Fassungsstollen,
+            unbestimmt),
+          Quellschacht,
+		  /*19.04.21 Fällt weg mit Revision CH-66*/
+          /*Sammelschacht,*/
+          Sod_Schachtbrunnen,
+          /*aus TWN, wird gemappt auf Objekt 4.3.8	Oberflaechengewaesserfassung.Fassungsart*/
+		  Fluss_Seewasserfassung(
+            Fliessgewaesserfassung,
+            Seewasserfassung)
+        ),
+        Aufbereitungsanlage(
+          Grundwasseranreicherung(
+            oberirdisch,
+            unterirdisch,
+            kombiniert,
+            unbestimmt)
+        ),
+        /*aus TWN, wird gemappt auf Objekt Brunnestube.Fassungsart*/
+		Brunnstube(
+          Fassungsbrunnstube,
+		  /*Sammelbrunnstube:Sammelt Wasser von mehreren Quellschächte oder Brunnenstuben*/
+          Sammelbrunnstube)
+        );
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+	    Betreiber (EXTENDED) : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenherr : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Datenlieferant : MANDATORY TEXT*16;
+		/*Arbeitsinstrukturion für Datenbewirtschafter - Nur Referenz ausgeben gemäss IPW-Organisationstabelle und nicht die Bezeichnung*/
+		Eigentuemer (EXTENDED) : MANDATORY TEXT*16;
+        Einbaujahr (EXTENDED) : MANDATORY SIA405_Base_LV95.Jahr;
+        Name_Nummer (EXTENDED) : MANDATORY TEXT*40;
+      /*Für die Abstimmung von Anlagenkataster mit der Anwendung Anlagen-WV müssen die OBJ_ID vorhanden und pro Datenherr eindeutig sein. SIA405_Base_LV95 definiert OBJ_ID nicht als Pflichtfeld.*/
+	  MANDATORY CONSTRAINT DEFINED (OBJ_ID);
+      UNIQUE 
+        /*UNIQUE Kombination Name_Nummer pro Datenherr*/
+        !!Name_Nummer, Datenherr;
+		OBJ_ID, Datenherr;
+    END Wassergewinnungsanlage;
+
+
+  END SIA405_Wasser_GWP;
+  
+    /*Die folgenden Definitionen dienen dazu, einen Transferdatensatz mit der harmonisierten Organisationsliste der Kantone Bern und Solothurn beziehungsweise der IP Wasser zu validieren.*/
+    VIEW TOPIC Organisation_Constraints = 
+	    DEPENDS ON GWP_Bern_13_1.SIA405_Wasser_GWP , WV_Organisation.WV_Organisation_Wasser;
+		
+		VIEW v_Leitung
+		    PROJECTION OF GWP_Bern_13_1.SIA405_Wasser_GWP.Leitung;
+			=
+			ALL OF Leitung;
+			EXISTENCE CONSTRAINT Eigentuemer REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+			EXISTENCE CONSTRAINT Betreiber REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenherr REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenlieferant REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+        
+		END v_Leitung;
+		
+		VIEW v_Hydrant
+		    PROJECTION OF GWP_Bern_13_1.SIA405_Wasser_GWP.Hydrant;
+			=
+			ALL OF Hydrant;
+			EXISTENCE CONSTRAINT Eigentuemer REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+			EXISTENCE CONSTRAINT Betreiber REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenherr REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenlieferant REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+        END v_Hydrant;
+		
+		VIEW v_Anlage
+		    PROJECTION OF GWP_Bern_13_1.SIA405_Wasser_GWP.Anlage;
+			=
+			ALL OF Anlage;
+			EXISTENCE CONSTRAINT Eigentuemer REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+			EXISTENCE CONSTRAINT Betreiber REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenherr REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenlieferant REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+        END v_Anlage;
+		
+		VIEW v_Foerderanlage
+		    PROJECTION OF GWP_Bern_13_1.SIA405_Wasser_GWP.Foerderanlage;
+			=
+			ALL OF Foerderanlage;
+			EXISTENCE CONSTRAINT Eigentuemer REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenherr REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenlieferant REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+        END v_Foerderanlage;
+		
+		VIEW v_Wasserbehaelter
+		    PROJECTION OF GWP_Bern_13_1.SIA405_Wasser_GWP.Wasserbehaelter;
+			=
+			ALL OF Wasserbehaelter;
+			EXISTENCE CONSTRAINT Eigentuemer REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenherr REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenlieferant REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+        END v_Wasserbehaelter;
+		
+		VIEW v_Wassergewinnungsanlage
+		    PROJECTION OF GWP_Bern_13_1.SIA405_Wasser_GWP.Wassergewinnungsanlage;
+			=
+			ALL OF Wassergewinnungsanlage;
+			EXISTENCE CONSTRAINT Eigentuemer REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+			EXISTENCE CONSTRAINT Betreiber REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenherr REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+            EXISTENCE CONSTRAINT Datenlieferant REQUIRED IN WV_Organisation.WV_Organisation_Wasser.Organisation:OBJ_ID;
+        END v_Wassergewinnungsanlage;
+		
+	END Organisation_Constraints;
+
+
+END GWP_Bern_13_1.

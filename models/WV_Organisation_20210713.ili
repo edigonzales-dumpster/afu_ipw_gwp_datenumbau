@@ -1,0 +1,74 @@
+!!===================================================================================
+!! Kundendaten
+!!===================================================================================
+!!
+!! Datenmodell WV-Organisationen (ohne Referenz zu Geobasisdatensatz)
+!!
+!!===================================================================================
+!! Revision History
+!!  2021-01-15 | 0.1 | Aufteilung in drei Teilmodelle, als Erweiterungen zu SIA405 
+!!  2021-03-25 | 0.2 | Strukturierung entsprechend Input aus IP Wasser
+!!  2021-06-03 | 1.0 | Redaktionelle Anpassungen  
+!!  2021-07-13 | 1.1 | Redaktionelle Anpassungen aufgrund Pilotprojekte
+!!===================================================================================
+!! Bemerkungen:
+!! Die Organisationen werden im Themenbereich Wasserversorgung in einer
+!! harmonisierten Liste geführt. Die Struktur der Tabelle folgt der IP Wasser. 
+!! Die Daten für diese Tabelle werden kantonsweit über die IPW gepflegt und allen 
+!! Stellen zur Verfügung gestellt. Die aktuelle Version steht auf der IPW-Homepage
+!! zum Download bereit. Änderungen sind an die IPW zu melden.
+!!===================================================================================
+!! Geprüft mit Interlis Compiler ili2c-5.2.0 (5.03.2021)
+!! Sachbearbeitung: Acht Grad Ost AG, Review Moflex GmbH
+!!===================================================================================
+INTERLIS 2.3;
+
+MODEL WV_Organisation (de)
+AT "http://www.bve.be.ch/bve/de/index/wasser/wasser/wasserversorgung/RESEAU.html"
+VERSION "2021-07-13"  =
+    IMPORTS UNQUALIFIED INTERLIS;
+
+!!---------------------------------------------------------------------------------------
+TOPIC WV_Organisation_Wasser =
+!!---------------------------------------------------------------------------------------
+
+   CLASS Organisation = 
+        OID AS STANDARDOID;
+        /*Allgemeine Bemerkungen*/
+        Bemerkung: TEXT*255;
+		/*Es wird die offiziellen Bezeichnung nach BFS-Register, UID-Register oder gebräuchlichem Namen verwendet.*/
+        Bezeichnung: MANDATORY TEXT*80;
+        /*Offizielle Gemeinde Nummer gemäss Bundesamt für Statistik, bei Gemeinde zwingend, sonst leer lassen.*/
+        Gemeindenummer: 1000 .. 9999 ;
+        /*Kurzbezeichnung*/
+        Kurzbezeichnung: TEXT*12;
+        Letzte_Aenderung: MANDATORY INTERLIS.INTERLIS_1_DATE;
+		OBJ_ID: MANDATORY TEXT*16;
+        Organisationstyp: MANDATORY (
+          andere,
+          /*Teil einer Bundesverwaltung (z.B. Bundesamt für Umwelt, ASTRA, Armasuisse)*/
+          Bund,
+          /*Für die Belange der Wasserversorgung zuständiges Organ der Gemeindeverwaltung*/
+          Gemeinde,
+          /*Teil einer kantonalen Verwaltung (z.B. Amt für Umweltschutz, Tiefbauamt)*/
+          Kanton,
+          /*Privatperson oder Privatorganisation, welche im Rahmen der Wasserversorgung auftritt, z.B. Fachplaner*/
+          Privat,
+          /*Eine Wasserversorgung steht stellvertretend für Zweckverbände, AG’s, Sitzgemeinden, Burgergemeinden, Genossenschaften, Kooperationen (und andere, Attribut Organisationsform) und ist Eigentümer und Betreiber von Wasserversorgungsanlagen.*/
+          Wasserversorgung
+        );
+        /* Status der Organisation, damit untergegangende Organisationen nicht einfach gelöscht werden müssen und kontrolliert werden kann, ob noch Beziehungen auf untergegangene Organisationen, z.B. bei Gemeindefusion oder Konkurs einer Firma vorhanden sind*/
+        Status: MANDATORY (
+          aktiv,
+          untergegangen
+        );
+        /* Referenz zur Unternehmensidentifikation des Bundesamts fuer Statistik (www.uid.admin.ch), z.B. CHE123456789*/
+        UID: TEXT*12;
+    UNIQUE 
+        /* Neben UNIQUE OID zusätzlich auch Kombination Bezeichnung, Organisationstyp, UID*/
+        Bezeichnung, Organisationstyp, UID; 
+    END Organisation;
+
+  END WV_Organisation_Wasser;
+
+END WV_Organisation.
