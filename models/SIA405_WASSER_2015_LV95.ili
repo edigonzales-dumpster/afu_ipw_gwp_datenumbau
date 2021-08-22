@@ -37,7 +37,7 @@ DOMAIN
 
 
 Statuswerte EXTENDS SIA405_Base_LV95.Status = (  !! Betriebs- und Planungszustand. neu 2010: Erweiterungen dazu in den einzelnen Medien definieren
-!! 23.1.2012 Anpassung auf neue Variante von SIA405_Base.Status - Erweiterung Basiswerte im Medium, hierarchische Modellierung und Anpassung an Compiler 4.5.13
+!! 23.1.2012 Anpassung auf neue Variante von SIA405_Base_LV95.Status - Erweiterung Basiswerte im Medium, hierarchische Modellierung und Anpassung an Compiler 4.5.13
       ausser_Betrieb (  !! fasst ausser_Betrieb und folgende Werte zusammen
       !! 17.7.2015  ausser_Betrieb,
       Reserve
@@ -55,8 +55,7 @@ Statuswerte EXTENDS SIA405_Base_LV95.Status = (  !! Betriebs- und Planungszustan
          )
       );  
 !! neu 9.7.2015  
-!!    Status = ALL OF Statuswerte;    !! Erweitert Wertebereich von SIA405 Status
-    Status EXTENDS Statuswerte = (gaga);    !! Erweitert Wertebereich von SIA405 Status
+    Status = ALL OF Statuswerte;    !! Erweitert Wertebereich von SIA405 Status
 
 
 CLASS Hydraulischer_Knoten EXTENDS SIA405_Base_LV95.SIA405_BaseClass =  

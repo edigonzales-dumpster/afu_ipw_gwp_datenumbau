@@ -1,11 +1,9 @@
-!! LV95 by infoGrips 15.08.2016
-
-!! SIA405_Base.ili 18.6.2014 
+!! SIA405_Base.ili 
 
 INTERLIS 2.3;
 
 TYPE MODEL SIA405_Base_LV95 (de) AT "http://www.sia.ch/405" 
-  VERSION "15.8.2016" =
+  VERSION "18.6.2014" =
 
   IMPORTS UNQUALIFIED INTERLIS;		!! neu 8.11.2004, importiert INTERLIS 2 Basisunits
   IMPORTS Base_LV95;
@@ -17,7 +15,7 @@ TYPE MODEL SIA405_Base_LV95 (de) AT "http://www.sia.ch/405"
 !! Änderungen und Ergänzungen dürfen zum Eigengebrauch getätigt werden. 
 !! Sie müssen innerhalb der Datei so dokumentiert sein, dass sichtbar wird, 
 !! welche Änderungen getätigt wurden (Einfügen von INTERLIS Kommentar). 
-!! Die Originalmodelldatei SIA405_Base.ili und darauf basierende 
+!! Die Originalmodelldatei SIA405_Base_LV95.ili und darauf basierende 
 !! abgeänderte Versionen dürfen nicht weiterverkauft werden. 
 !! Die Weitergabe der Originaldatei (als Ganzes oder Teile davon) ist nur 
 !! zusammen mit dem Erwerb einer Lizenz beim sia (www.sia.ch) durch den Empfänger erlaubt.
@@ -31,7 +29,7 @@ TYPE MODEL SIA405_Base_LV95 (de) AT "http://www.sia.ch/405"
 !! 22.11.2010 Anpassung Reihenfolge Status neu alphabetisch
 !! 01.07.2011 MTEXT statt TEXT für Textinhalt
 !! 29.8.2011 Textinhalt neu MANDATORY, damit für Erzeugung von dxf ab INTERLIS in Inhalt vorhanden ist.
-!! 25.1.2012 Neue SIA405_BaseClass geerbt von Base.ili
+!! 25.1.2012 Neue SIA405_BaseClass geerbt von Base_LV95.ili
 !! 21.2.2012 Neuer Datentyp Maechtigkeit
 !! 21.2.2012 Neuer Datentyp Abmessung
 !! 21.2.2012 OrganisationBezeichnung: TEXT*80;  !! Neuer Datentyp für Eigentuemer, Betreiber, Datenherr, Datenlieferant, etc.
@@ -114,7 +112,7 @@ TYPE MODEL SIA405_Base_LV95 (de) AT "http://www.sia.ch/405"
 !! neu 25.1.2012	
    CLASS SIA405_BaseClass (ABSTRACT) EXTENDS Base_LV95.BaseClass =
    !! BaseClass für alle Oberklassen (Superclass) mit Metaattributen
-   	  OID AS STANDARDOID;  !! gewählte Option für Definition ANYOID aus base.ili. Weitere Infos siehe Merkblatt 2015, Kapitel 2.1.3.8 Objektidentifikatoren (OID) 
+   	  OID AS STANDARDOID;  !! gewählte Option für Definition ANYOID aus Base_LV95.ili. Weitere Infos siehe Merkblatt 2015, Kapitel 2.1.3.8 Objektidentifikatoren (OID) 
       !! Als Attribut OBJ_ID zusätzlich redundant zu OID und den Bedingungen für die TID ausmodelliert, damit Rückwärtskompatibilität mit INTERLIS 1 möglich. Attribut soll in Datenbank verwaltet werden oder stabil beim Export/Import verwaltet werden können. 
 	  ATTRIBUTE
 		OBJ_ID: TEXT*16; !! neu 23.5.2012 OID (STANDARDOID) zusätzlich redundant als Attribut modelliert (siehe SIA 405 Merkblatt 2015, Kapitel 2.3.
@@ -129,7 +127,7 @@ TYPE MODEL SIA405_Base_LV95 (de) AT "http://www.sia.ch/405"
       Bemerkung: TEXT*80; !! für bilaterale weitere Spezifikationen
   END SIA405_TextPos; 
 
-!! neu 30.8.2011 - für Fernwärme / 21.2.2012 Symbolskalierung hierher verschoben statt in Base.ili
+!! neu 30.8.2011 - für Fernwärme / 21.2.2012 Symbolskalierung hierher verschoben statt in Base_LV95.ili
    CLASS SIA405_SymbolPos (ABSTRACT) EXTENDS Base_LV95.SymbolPos =
       Plantyp: MANDATORY Plantyp;
       SymbolskalierungLaengs: 0.0 .. 9.9;

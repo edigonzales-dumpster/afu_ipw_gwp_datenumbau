@@ -1,11 +1,9 @@
-!! LV95 by infoGrips 15.08.2016
-
-!! Base.ili 18.4.2014
+!! Base.ili
 
 INTERLIS 2.3;
 
 TYPE MODEL Base_LV95 (de) AT "http://www.sia.ch/405" 
-  VERSION "15.8.2016" =
+  VERSION "18.4.2014" =
 
     IMPORTS UNQUALIFIED INTERLIS;		!! neu 8.11.2004, importiert INTERLIS 2.3. Basisunits
     IMPORTS Units;
@@ -36,7 +34,7 @@ TYPE MODEL Base_LV95 (de) AT "http://www.sia.ch/405"
 !!    LKoord = COORD 480000.000 .. 840000.000 [m], !!{CHLV03/1}, 
 !!                   70000.000 .. 300000.000 [m],  !!{CHLV03/2},
 !!                   ROTATION 2 -> 1;
-!!
+
 !!    HKoord = COORD 480000.000 .. 840000.000 [m], !!{CHLV03/1},
 !!                   70000.000 .. 300000.000 [m], !!{CHLV03/2}, 
 !!                   -200.000 .. 5000.000 [m], !!{SwissOrthometricAlt},
