@@ -1,12 +1,24 @@
 DELETE FROM 
-    gwp.hydraulischer_knoten
+    gwp.muffen 
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_hydrant 
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_leitung 
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_hydraulischer_strang 
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_hydraulischer_knoten 
 ;
 
 INSERT INTO 
-    gwp.hydraulischer_knoten 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_hydraulischer_knoten 
     (
         t_id,
-        t_type,
+        --t_type,
         t_ili_tid,
         name_nummer,
         geometrie,
@@ -18,7 +30,7 @@ INSERT INTO
     )
 SELECT 
     t_id,
-    'gwp_bern_13_1sia405_wasser_gwp_hydraulischer_knoten',
+    --'gwp_bern_13_1sia405_wasser_gwp_hydraulischer_knoten',
     t_ili_tid,
     name_nummer,
     geometrie,
@@ -31,16 +43,11 @@ FROM
     wasser.hydraulischer_knoten  
 ;
 
-
-DELETE FROM 
-    gwp.hydraulischer_strang 
-;
-
 INSERT INTO 
-    gwp.hydraulischer_strang 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_hydraulischer_strang 
     (
         t_id,
-        t_type,
+        --t_type,
         t_ili_tid,
         name_nummer,
         referenz_laenge,
@@ -51,13 +58,13 @@ INSERT INTO
         fliessgeschwindigkeit,
         zustand,
         bemerkung,
-        bisknotenref,
-        vonknotenref,
+        bisknotenref_gwp_brn_13_1s405_wssr_gwp_hydrlschr_knten,
+        vonknotenref_gwp_brn_13_1s405_wssr_gwp_hydrlschr_knten,
         obj_id
     )
 SELECT 
     t_id,
-    'gwp_bern_13_1sia405_wasser_gwp_hydraulischer_strang',
+    --'gwp_bern_13_1sia405_wasser_gwp_hydraulischer_strang',
     t_ili_tid,
     name_nummer,
     referenz_laenge,
@@ -75,3 +82,196 @@ FROM
     wasser.hydraulischer_strang 
 ;
 
+INSERT INTO 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_leitung
+    (
+        t_id,
+        t_ili_tid,
+        --betreiber,
+        --datenherr,
+        --datenlieferant,
+        --durchmesser_geplant,
+        --eigentuemer,
+        --lagebestimmung,
+        --material,
+        --subventionsberechtigung,
+        --trinkwasser,
+        --wbw_basisjahr,
+        --wiederbeschaffungswert,
+        name_nummer,
+        geometrie,
+        funktion,
+        durchmesserinnen,
+        durchmesseraussen,
+        durchmesser,
+        nennweite,
+        wasserqualitaet,
+        astatus,
+        baujahr,
+        verbindungsart,
+        aussenbeschichtung,
+        innenbeschichtung,
+        verlegeart,
+        schubsicherung,
+        ueberdeckung,
+        sanierung_erneuerung,
+        bettung,
+        kathodischer_schutz,
+        druckzone,
+        zulaessiger_bauteil_betriebsdruck,
+        betriebsdruck,
+        hydraulische_rauheit,
+        laenge,
+        unterhalt,
+        zustand,
+        konzessionaer,
+        unterhaltspflichtiger,
+        bemerkung,
+        strangref_gwp_bern_13_1si405_wssr_gwp_hydrlschr_strang,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    name_nummer,
+    geometrie,
+    funktion,
+    durchmesserinnen,
+    durchmesseraussen,
+    durchmesser,
+    nennweite,
+    wasserqualitaet,
+    astatus,
+    baujahr,
+    verbindungsart,
+    aussenbeschichtung,
+    innenbeschichtung,
+    verlegeart,
+    schubsicherung,
+    ueberdeckung,
+    sanierung_erneuerung,
+    bettung,
+    kathodischer_schutz,
+    druckzone,
+    zulaessiger_bauteil_betriebsdruck,
+    betriebsdruck,
+    hydraulische_rauheit,
+    laenge,
+    unterhalt,
+    zustand,
+    konzessionaer,
+    unterhaltspflichtiger,
+    bemerkung,
+    strangref,
+    obj_id
+FROM 
+    wasser.leitung 
+;
+    
+INSERT INTO 
+    gwp.muffen 
+    (
+        t_id,
+        t_ili_tid,
+        art,
+        schubsicherung,
+        dimension,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        einbaujahr,
+        druckzone,
+        eigentuemer,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    art,
+    schubsicherung,
+    dimension,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    einbaujahr,
+    druckzone,
+    eigentuemer,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM 
+    wasser.muffen 
+;
+
+INSERT INTO
+    gwp.gwp_bern_13_1sia405_wasser_gwp_hydrant 
+    (
+        t_id,
+        t_ili_tid, 
+        art,
+        --betreiber,
+        --datenherr,
+        --datenlieferant,
+        --eigentuemer,
+        einbaujahr,
+        --fliessgeschwindigkeit,
+        name_nummer,
+        --astatus,
+        versorgungsdruck,
+        material,
+        dimension,
+        hersteller,
+        fliessdruck,
+        entnahme,
+        typ,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        druckzone,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid, 
+    art,
+    --betreiber,
+    --datenherr,
+    --datenlieferant,
+    --eigentuemer, -- ist nur noch Referenz
+    einbaujahr,
+    --fliessgeschwindigkeit,
+    name_nummer,
+    --astatus,
+    versorgungsdruck,
+    material,
+    dimension,
+    hersteller,
+    fliessdruck,
+    entnahme,
+    typ,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    druckzone,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM 
+    wasser.hydrant 
+;
