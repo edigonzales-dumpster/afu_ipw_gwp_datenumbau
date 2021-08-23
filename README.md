@@ -37,12 +37,13 @@ Idee:
 - Dient nur dem Datenumbau. Daten werden anschliessend exportiert und mit den gewünschten Abbildungsregeln neu importiert.
 - Kann automatisiert werden (ili2h2gis?)
 - TODO: Man muss die Leitungsknoten sowieso einzeln behandeln. Doch smart2Inheritance? Dann ist vielleicht das Attribut-Mapping simpler.
+- TODO: Dummy-Werte statt NULL? Strings noch halbwegs sinnvoll machbar. Numerische Werte?
 
 ```
-java -jar /Users/stefan/apps/ili2pg-4.5.0/ili2pg-4.5.0.jar --dbhost localhost --dbport 54321 --dbdatabase edit --dbusr gretl --dbpwd gretl --dbschema gwp --smart1Inheritance --createNumChecks --createUnique --createFk --createFkIdx --sqlEnableNull --createGeomIdx --createMetaInfo  --createTidCol --importTid --strokeArcs --defaultSrsCode 2056 --modeldir models/ --models "GWP_Bern_13_1" --schemaimport
+java -jar /Users/stefan/apps/ili2pg-4.5.0/ili2pg-4.5.0.jar --dbhost localhost --dbport 54321 --dbdatabase edit --dbusr gretl --dbpwd gretl --dbschema gwp --smart2Inheritance --createNumChecks --createUnique --createFk --createFkIdx --sqlEnableNull --createGeomIdx --createMetaInfo  --createTidCol --importTid --strokeArcs --defaultSrsCode 2056 --modeldir models/ --models "GWP_Bern_13_1" --schemaimport
 
 
-java -jar /Users/stefan/apps/ili2pg-4.5.0/ili2pg-4.5.0.jar --dbhost localhost --dbport 54321 --dbdatabase edit --dbusr gretl --dbpwd gretl --dbschema wasser --smart1Inheritance --createNumChecks --createUnique --createFk --createFkIdx --beautifyEnumDispName --createGeomIdx --createMetaInfo  --createTidCol --importTid --strokeArcs --defaultSrsCode 2056 --modeldir models/ --models SIA405_WASSER_2015_LV95 --disableValidation --doSchemaImport  --import ../../Downloads/Biberist_Wasser_SIA405.xtf
+java -jar /Users/stefan/apps/ili2pg-4.5.0/ili2pg-4.5.0.jar --dbhost localhost --dbport 54321 --dbdatabase edit --dbusr gretl --dbpwd gretl --dbschema wasser --smart2Inheritance --createNumChecks --createUnique --createFk --createFkIdx --beautifyEnumDispName --createGeomIdx --createMetaInfo  --createTidCol --importTid --strokeArcs --defaultSrsCode 2056 --modeldir models/ --models SIA405_WASSER_2015_LV95 --disableValidation --doSchemaImport  --import ../../Downloads/Biberist_Wasser_SIA405.xtf
 ```
 
 
