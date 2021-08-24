@@ -1,8 +1,62 @@
 DELETE FROM 
+    gwp.spezialbauwerk_flaeche 
+;
+DELETE FROM 
+    gwp.spezialbauwerk_linie 
+;
+DELETE FROM 
+    gwp.spezialbauwerk_text 
+;
+DELETE FROM 
+    gwp.spezialbauwerk 
+;
+DELETE FROM 
+    gwp.schadenstelle 
+;
+DELETE FROM 
+    gwp.leitung_text 
+;
+DELETE FROM 
+    gwp.hydraulischer_knoten_text 
+;
+DELETE FROM 
+    gwp.hydraulischer_strang_text 
+;
+DELETE FROM 
+    gwp.uebersichtsplanposition 
+;
+DELETE FROM 
+    gwp.leitungsknoten_text 
+;
+DELETE FROM 
+    gwp.rohrleitungsteil
+;
+DELETE FROM 
+    gwp.uebrige 
+;
+DELETE FROM 
     gwp.muffen 
 ;
 DELETE FROM 
+    gwp.absperrorgan 
+;
+DELETE FROM 
+    gwp.hausanschluss 
+;
+DELETE FROM 
     gwp.gwp_bern_13_1sia405_wasser_gwp_hydrant 
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_anlage
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_foerderanlage 
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_wasserbehaelter 
+;
+DELETE FROM 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_wassergewinnungsanlage 
 ;
 DELETE FROM 
     gwp.gwp_bern_13_1sia405_wasser_gwp_leitung 
@@ -274,4 +328,730 @@ SELECT
     obj_id
 FROM 
     wasser.hydrant 
+;
+
+INSERT INTO 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_anlage 
+    (
+        t_id,
+        t_ili_tid,
+        art,
+        --betreiber,
+        --datenherr,
+        --datenlieferant,
+        --eigentuemer,
+        einbaujahr,
+        name_nummer,
+        material,
+        leistung,
+        konzessionaer,
+        unterhaltspflichtiger,
+        zustand,
+        dimension1,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        druckzone,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    art,
+    --betreiber,
+    --datenherr,
+    --datenlieferant,
+    --eigentuemer,
+    einbaujahr,
+    name_nummer,
+    material,
+    leistung,
+    konzessionaer,
+    unterhaltspflichtiger,
+    zustand,
+    dimension1,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    druckzone,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM 
+    wasser.anlage 
+;
+
+INSERT INTO
+    gwp.gwp_bern_13_1sia405_wasser_gwp_foerderanlage 
+    (
+        t_id,
+        t_ili_tid,
+        art,
+        --datenherr,
+        --datenlieferant,
+        --eigentuemer,
+        einbaujahr,
+        hoehe,
+        name_nummer,
+        leistung,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehenbestimmung,
+        druckzone,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    art,
+    --datenherr,
+    --datenlieferant,
+    --eigentuemer,
+    einbaujahr,
+    hoehe,
+    name_nummer,
+    leistung,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehenbestimmung,
+    druckzone,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM    
+    wasser.foerderanlage 
+;
+
+INSERT INTO
+    gwp.gwp_bern_13_1sia405_wasser_gwp_wasserbehaelter 
+    (
+        t_id,
+        t_ili_tid,
+        art,
+        --datenherr,
+        --datenlieferant,
+        --eigentuemer,
+        einbaujahr,
+        name_nummer,
+        --material,
+        --beschichtung,
+        --ueberlaufhoehe,
+        --fassungsvermoegen,
+        --brauchwasserreserve,
+        --loeschwasserreserve,
+        leistung,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        druckzone,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+        t_id,
+        t_ili_tid,
+        art,
+        --datenherr,
+        --datenlieferant,
+        --eigentuemer,
+        einbaujahr,
+        name_nummer,
+        --material,
+        --beschichtung,
+        --ueberlaufhoehe,
+        --fassungsvermoegen,
+        --brauchwasserreserve,
+        --loeschwasserreserve,
+        leistung,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        druckzone,
+        bemerkung,
+        knotenref,
+        obj_id
+FROM 
+    wasser.wasserbehaelter 
+;
+    
+INSERT INTO 
+    gwp.gwp_bern_13_1sia405_wasser_gwp_wassergewinnungsanlage 
+    (
+        t_id,
+        t_ili_tid,
+        art,
+        --betreiber,
+        --datenherr,
+        --datenlieferant,
+        --eigentuemer,
+        einbaujahr,
+        name_nummer,
+        leistung,
+        konzessionaer,
+        unterhaltspflichtiger,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        druckzone,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    art,
+    --betreiber,
+    --datenherr,
+    --datenlieferant,
+    --eigentuemer,
+    einbaujahr,
+    name_nummer,
+    leistung,
+    konzessionaer,
+    unterhaltspflichtiger,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    druckzone,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM 
+    wasser.wassergewinnungsanlage 
+;
+
+INSERT INTO
+    gwp.rohrleitungsteil 
+    (
+        t_id,
+        t_ili_tid,
+        name_nummer,
+        art,
+        verbindung,
+        material,
+        dimension,
+        zulaessiger_betriebsdruck,
+        abwinklung,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        einbaujahr,
+        druckzone,
+        eigentuemer,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    name_nummer,
+    art,
+    verbindung,
+    material,
+    dimension,
+    zulaessiger_betriebsdruck,
+    abwinklung,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    einbaujahr,
+    druckzone,
+    eigentuemer,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM    
+    wasser.rohrleitungsteil 
+;
+
+INSERT INTO
+    gwp.uebrige 
+    (
+        t_id,
+        t_ili_tid,
+        name_nummer,
+        art,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        einbaujahr,
+        druckzone,
+        eigentuemer,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    ) 
+SELECT 
+    t_id,
+    t_ili_tid,
+    name_nummer,
+    art,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    einbaujahr,
+    druckzone,
+    eigentuemer,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM 
+    wasser.uebrige 
+;
+
+INSERT INTO
+    gwp.absperrorgan 
+    (
+        t_id,
+        t_ili_tid,
+        name_nummer,
+        art,
+        schaltzustand,
+        schaltantrieb,
+        material,
+        zulaessiger_bauteil_betriebsdruck,
+        nennweite,
+        hersteller,
+        typ,
+        schliessrichtung,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        einbaujahr,
+        druckzone,
+        eigentuemer,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    name_nummer,
+    art,
+    schaltzustand,
+    schaltantrieb,
+    material,
+    zulaessiger_bauteil_betriebsdruck,
+    nennweite,
+    hersteller,
+    typ,
+    schliessrichtung,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    einbaujahr,
+    druckzone,
+    eigentuemer,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM 
+    wasser.absperrorgan 
+;
+
+INSERT INTO
+    gwp.hausanschluss 
+    (
+        t_id,
+        t_ili_tid,
+        name_nummer,
+        standort,
+        art,
+        gebaeudeanschluss,
+        isolierstueck,
+        typ,
+        dimension,
+        zuordnung_hydraulischer_strang,
+        zuordnung_hydraulischer_knoten,
+        verbrauch,
+        zustand,
+        geometrie,
+        symbolori,
+        lagebestimmung,
+        hoehe,
+        hoehenbestimmung,
+        einbaujahr,
+        druckzone,
+        eigentuemer,
+        bemerkung,
+        knotenref_gwp_bern_13_1sia405_wssr_gwp_hydrlschr_knten,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    name_nummer,
+    standort,
+    art,
+    gebaeudeanschluss,
+    isolierstueck,
+    typ,
+    dimension,
+    zuordnung_hydraulischer_strang,
+    zuordnung_hydraulischer_knoten,
+    verbrauch,
+    zustand,
+    geometrie,
+    symbolori,
+    lagebestimmung,
+    hoehe,
+    hoehenbestimmung,
+    einbaujahr,
+    druckzone,
+    eigentuemer,
+    bemerkung,
+    knotenref,
+    obj_id
+FROM 
+    wasser.hausanschluss 
+;
+
+
+INSERT INTO 
+    gwp.leitungsknoten_text 
+    (
+        t_id,
+        t_ili_tid,
+        leitungsknotenref_absperrorgan,
+        leitungsknotenref_uebrige,
+        leitungsknotenref_muffen,
+        leitungsknotenref_hausanschluss,
+        leitungsknotenref_rohrleitungsteil,
+        leitungsknotenref_gwp_bern_13_1sia405_wssr_gwp_hydrant,
+        leitungsknotenref_gwp_bern_13_1s405_wssr_gwp_frdrnlage,
+        leitungsknotenref_gwp_bern_13_1sia405_wasser_gwp_nlage,
+        leitungsknotenref_gwp_brn_13_1s405_wssr_gwp_wssrbhlter,
+        leitungsknotenref_gwp_brn_13_1s405_wp_wssrgwnnngsnlage,
+        plantyp,
+        textinhalt,
+        bemerkung,
+        textpos,
+        textori,
+        texthali,
+        textvali
+    ) 
+SELECT 
+    t_id,
+    t_ili_tid,
+    leitungsknotenref_absperrorgan,
+    leitungsknotenref_uebrige,
+    leitungsknotenref_muffen,
+    leitungsknotenref_hausanschluss,
+    leitungsknotenref_rohrleitungsteil,
+    leitungsknotenref_hydrant,
+    leitungsknotenref_foerderanlage,
+    leitungsknotenref_anlage,
+    leitungsknotenref_wasserbehaelter,
+    leitungsknotenref_wassergewinnungsanlage,
+    plantyp,
+    textinhalt,
+    bemerkung,
+    textpos,
+    textori,
+    texthali,
+    textvali
+FROM 
+    wasser.leitungsknoten_text 
+;
+
+INSERT INTO 
+    gwp.uebersichtsplanposition 
+    (
+        t_id,
+        t_ili_tid,
+        objekt_absperrorgan,
+        objekt_uebrige,
+        objekt_muffen,
+        objekt_hausanschluss,
+        objekt_rohrleitungsteil,
+        objekt_gwp_bern_13_1sia405_wasser_gwp_hydrant,
+        objekt_gwp_bern_13_1sia405_wasser_gwp_foerderanlage,
+        objekt_gwp_bern_13_1sia405_wasser_gwp_anlage,
+        objekt_gwp_bern_13_1sia405_wasser_gwp_wasserbehaelter,
+        objekt_gwp_bern_13_1sia405_wasser_gwp_wssrgwnnngsnlage,
+        plantyp,
+        symbolskalierunglaengs,
+        symbolskalierunghoch,
+        symbolpos,
+        symbolori
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    objekt_absperrorgan,
+    objekt_uebrige,
+    objekt_muffen,
+    objekt_hausanschluss,
+    objekt_rohrleitungsteil,
+    objekt_hydrant,
+    objekt_foerderanlage,
+    objekt_anlage,
+    objekt_wasserbehaelter,
+    objekt_wassergewinnungsanlage,
+    plantyp,
+    symbolskalierunglaengs,
+    symbolskalierunghoch,
+    symbolpos,
+    symbolori
+FROM 
+    wasser.uebersichtsplanposition 
+;
+
+INSERT INTO 
+    gwp.hydraulischer_strang_text 
+    (
+        t_id,
+        t_ili_tid,
+        hydraulischer_strngref_gwp_brn_13_1s40hydrlschr_strang,
+        plantyp,
+        textinhalt,
+        bemerkung,
+        textpos,
+        textori,
+        texthali,
+        textvali
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    hydraulischer_strangref,
+    plantyp,
+    textinhalt,
+    bemerkung,
+    textpos,
+    textori,
+    texthali,
+    textvali
+
+FROM 
+    wasser.hydraulischer_strang_text 
+;
+
+INSERT INTO
+    gwp.hydraulischer_knoten_text 
+    (
+        t_id,
+        t_ili_tid,
+        hydraulischer_knotnref_gwp_brn_13_1s40_hydrlschr_knten,
+        plantyp,
+        textinhalt,
+        bemerkung,
+        textpos,
+        textori,
+        texthali,
+        textvali
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    hydraulischer_knotenref,
+    plantyp,
+    textinhalt,
+    bemerkung,
+    textpos,
+    textori,
+    texthali,
+    textvali
+FROM 
+    wasser.hydraulischer_knoten_text
+;
+    
+INSERT INTO
+    gwp.leitung_text 
+    (
+        t_id,
+        t_ili_tid,
+        leitungref_gwp_bern_13_1sia405_wasser_gwp_leitung,
+        plantyp,
+        textinhalt,
+        bemerkung,
+        textpos,
+        textori,
+        texthali,
+        textvali
+    )
+SELECT 
+        t_id,
+        t_ili_tid,
+        leitungref,
+        plantyp,
+        textinhalt,
+        bemerkung,
+        textpos,
+        textori,
+        texthali,
+        textvali
+FROM 
+    wasser.leitung_text 
+;
+
+INSERT INTO
+    gwp.schadenstelle 
+    (
+        t_id,
+        t_ili_tid,
+        name_nummer,
+        geometrie,
+        art,
+        ursache,
+        ausloeser,
+        erhebungsdatum,
+        behebungsdatum,
+        zustand,
+        bemerkung,
+        leitungref_gwp_bern_13_1sia405_wasser_gwp_leitung,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    name_nummer,
+    geometrie,
+    art,
+    ursache,
+    ausloeser,
+    erhebungsdatum,
+    behebungsdatum,
+    zustand,
+    bemerkung,
+    leitungref,
+    obj_id
+FROM 
+    wasser.schadenstelle 
+;
+
+INSERT INTO 
+    gwp.spezialbauwerk 
+    (
+        t_id,
+        t_ili_tid,
+        name_nummer,
+        art,
+        material,
+        einbaujahr,
+        eigentuemer,
+        bemerkung,
+        obj_id
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    name_nummer,
+    art,
+    material,
+    einbaujahr,
+    eigentuemer,
+    bemerkung,
+    obj_id
+FROM 
+    wasser.spezialbauwerk 
+;
+    
+INSERT INTO
+    gwp.spezialbauwerk_flaeche 
+    (
+        t_id,
+        t_ili_tid,
+        geometrie,
+        spezialbauwerkref
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    geometrie,
+    spezialbauwerkref
+FROM 
+    wasser.spezialbauwerk_flaeche 
+;
+
+INSERT INTO
+    gwp.spezialbauwerk_linie
+    (
+        t_id,
+        t_ili_tid,
+        geometrie,
+        spezialbauwerkref
+    )
+SELECT 
+    t_id,
+    t_ili_tid,
+    geometrie,
+    spezialbauwerkref
+FROM 
+    wasser.spezialbauwerk_linie 
+;
+
+INSERT INTO
+    gwp.spezialbauwerk_text 
+    (
+        t_id,
+        t_ili_tid,
+        spezialbauwerkref,
+        plantyp,
+        textinhalt,
+        bemerkung,
+        textpos,
+        textori,
+        texthali,
+        textvali
+    ) 
+SELECT
+    t_id,
+    t_ili_tid,
+    spezialbauwerkref,
+    plantyp,
+    textinhalt,
+    bemerkung,
+    textpos,
+    textori,
+    texthali,
+    textvali
+FROM 
+    wasser.spezialbauwerk_text 
 ;
