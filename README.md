@@ -1,4 +1,4 @@
-# afu_ipw_gwp_modelltests
+# afu_ipw_gwp_datenumbau
 
 ```
 docker run -p 54321:5432 -e POSTGRES_DB=edit -e POSTGRES_PASSWORD=mysecretpassword edigonzales/postgis:13-3.1
